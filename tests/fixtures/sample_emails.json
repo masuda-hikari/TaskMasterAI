@@ -1,0 +1,50 @@
+[
+  {
+    "id": "email_001",
+    "thread_id": "thread_001",
+    "subject": "プロジェクト進捗報告 - Q4レビュー",
+    "sender": "tanaka@company.com",
+    "recipient": "user@company.com",
+    "date": "2025-01-05T10:30:00+09:00",
+    "body": "お疲れ様です。田中です。\n\nQ4プロジェクトの進捗をご報告いたします。\n\n【完了事項】\n- APIの実装完了\n- ユニットテスト80%カバレッジ達成\n- ドキュメント更新\n\n【残課題】\n- パフォーマンス最適化（来週完了予定）\n- 本番デプロイ準備\n\n来週水曜日にレビューミーティングを設定させていただければと思います。\nご都合はいかがでしょうか。\n\nよろしくお願いいたします。",
+    "snippet": "お疲れ様です。田中です。Q4プロジェクトの進捗をご報告いたします...",
+    "is_unread": true,
+    "labels": ["INBOX", "UNREAD", "CATEGORY_UPDATES"]
+  },
+  {
+    "id": "email_002",
+    "thread_id": "thread_002",
+    "subject": "【緊急】サーバー障害について",
+    "sender": "ops-team@company.com",
+    "recipient": "all-engineers@company.com",
+    "date": "2025-01-05T08:15:00+09:00",
+    "body": "エンジニアチームの皆様\n\n本日8:00頃、本番サーバーにて障害が発生しました。\n\n【影響範囲】\n- APIレスポンスタイムが通常の3倍に増加\n- 一部ユーザーでタイムアウトエラー発生\n\n【原因】\nDBコネクションプールの枯渇\n\n【対応状況】\n- 8:30 一次対応完了（プール数増加）\n- 現在、恒久対策を検討中\n\n詳細はインシデントレポートに記載予定です。\n\n運用チーム",
+    "snippet": "本日8:00頃、本番サーバーにて障害が発生しました...",
+    "is_unread": true,
+    "labels": ["INBOX", "UNREAD", "IMPORTANT", "CATEGORY_UPDATES"]
+  },
+  {
+    "id": "email_003",
+    "thread_id": "thread_003",
+    "subject": "ランチミーティングのお誘い",
+    "sender": "suzuki@company.com",
+    "recipient": "user@company.com",
+    "date": "2025-01-04T17:00:00+09:00",
+    "body": "こんにちは！鈴木です。\n\n来週のどこかでランチしませんか？\n新しいプロジェクトについて相談したいことがあります。\n\n火曜か木曜が空いているのですが、ご都合いかがですか？\n\nお返事お待ちしています！",
+    "snippet": "来週のどこかでランチしませんか？新しいプロジェクトについて...",
+    "is_unread": true,
+    "labels": ["INBOX", "UNREAD"]
+  },
+  {
+    "id": "email_004",
+    "thread_id": "thread_004",
+    "subject": "Weekly Newsletter - Tech Updates",
+    "sender": "newsletter@techdigest.com",
+    "recipient": "user@company.com",
+    "date": "2025-01-04T06:00:00+09:00",
+    "body": "This week in tech:\n\n1. AI breakthroughs continue\n2. New programming language released\n3. Cloud computing trends for 2025\n\nRead more at our website.",
+    "snippet": "This week in tech: AI breakthroughs continue...",
+    "is_unread": true,
+    "labels": ["INBOX", "UNREAD", "CATEGORY_PROMOTIONS"]
+  }
+]
