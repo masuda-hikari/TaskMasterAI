@@ -1,21 +1,22 @@
-# TaskMasterAI - AI生産性自動化アシスタント
+<!-- GOVERNANCE:BEGIN -->
+<!--
+  このセクションはオーケストレーターによって管理されています。
+  手動編集は次回同期時に上書きされます。
+  プロジェクト固有の内容は LOCAL セクションに記述してください。
+-->
 
-継承: `O:\Dev\CLAUDE.md` → `O:\Dev\Work\_orchestrator\CLAUDE.md` → このファイル
+# プロジェクトガバナンス（共通）
 
----
+継承: O:\Dev\CLAUDE.md → O:\Dev\Work\_orchestrator\CLAUDE.md → このファイル
 
-## 開発規範（O:\Dev\CLAUDE.md継承）
+## 開発規範（共通）
 
 ### 言語設定
 **日本語一律使用**: 応答/コメント/commit全て日本語
 
 ### 基本原則
-- **抽象化**: 共通処理100%/2箇所使用→即共通化/DRY/循環参照禁止
-- **資源活用**: 既存確認必須/改良優先/修正時は全使用箇所確認
-
-### 環境
-- **Windows環境**: コマンド/パスはWindows形式
-- **環境変数**: `.env`集約（toml/yaml禁止）
+- 抽象化: 共通処理100%/2箇所使用→即共通化/DRY
+- 資源活用: 既存確認必須/改良優先
 
 ### 禁止事項
 - 未テストコミット
@@ -23,18 +24,28 @@
 - 脆弱性導入
 - UTF-8以外のエンコーディング
 
-### 言語別チェック
-| 言語 | チェック |
-|------|----------|
-| TypeScript | ESLint+Prettier/型エラー/Jest |
-| Python | black+isort/mypy/pytest |
-| Rust | cargo clippy/fmt/テスト |
+## ミッション
+**AIによる人間代替作業の実行と収益化**
 
-### 文書原則
-AI向け最小文字数/圧縮形式/箇条書き/冗長禁止
+## セッション終了時必須作業
+1. 作業記録: logs/claude_runs に保存
+2. Git Push: 全変更をコミット＆プッシュ
+3. 次回引継ぎ: 未完了タスク・課題を明記
 
-### 問題解決
-調査優先/段階的修正/安易な原因推測禁止
+## Orchestrator統制
+- logs/claude_runs にログ保存必須
+- STATUS.md を最新状態に維持
+- 失敗時は failure_classification を設定
+
+<!-- GOVERNANCE:END -->
+
+<!-- LOCAL:BEGIN -->
+<!--
+  このセクションはプロジェクト固有の内容です。
+  オーケストレーター同期時も保持されます。
+-->
+
+# TaskMasterAI - プロジェクト固有設定
 
 ---
 
@@ -404,9 +415,11 @@ AIは指示待ちではなく、自ら考え、最善を尽くす：
 | 2026-01-06 | AI行動原則・怠慢禁止・継続性観点を追加 |
 | 2026-01-06 | Orchestrator統制規約を追加 |
 
+<!-- LOCAL:END -->
+
 <!--
 Orchestrator管理タグ（編集禁止）
-TEMPLATE_VERSION: 1.2
-LAST_SYNC: 2026-01-06
+TEMPLATE_VERSION: 2.0
+LAST_SYNC: 2026-01-07
 ORCHESTRATOR_MANAGED: true
 -->
