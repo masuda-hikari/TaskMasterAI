@@ -4,15 +4,21 @@ Scheduler Module - カレンダー管理・スケジューリング機能
 Google Calendar APIを使用して空き時間検索・会議スケジュールを行う
 """
 
-import os
-import logging
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import Optional
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-logger = logging.getLogger(__name__)
+from .logging_config import get_logger, PerformanceTimer
+from .errors import (
+    ScheduleError,
+    AuthError,
+    ErrorCode,
+    ErrorSeverity,
+)
+
+logger = get_logger(__name__, "scheduler")
 
 
 @dataclass
@@ -96,7 +102,10 @@ class Scheduler:
         self.working_hours_end = 18   # 18:00
         self.working_days = [0, 1, 2, 3, 4]  # 月〜金
 
-        logger.info(f"Scheduler初期化: timezone={timezone}, confirmation={confirmation_required}")
+        logger.info(
+            "Scheduler初期化",
+            data={"timezone": timezone, "confirmation_required": confirmation_required}
+        )
 
     def authenticate(self) -> bool:
         """
@@ -123,8 +132,10 @@ class Scheduler:
 
             if not creds or not creds.valid:
                 if creds and creds.expired and creds.refresh_token:
+                    logger.info("トークンを更新中")
                     creds.refresh(Request())
                 else:
+                    logger.info("新規認証フローを開始")
                     flow = InstalledAppFlow.from_client_secrets_file(
                         str(self.credentials_path), SCOPES
                     )
@@ -138,8 +149,26 @@ class Scheduler:
             logger.info("Google Calendar API認証成功")
             return True
 
+        except ImportError as e:
+            error = AuthError(
+                code=ErrorCode.AUTH_CREDENTIALS_MISSING,
+                message="Calendar API認証ライブラリがインストールされていません",
+                details={"missing_package": str(e)},
+                cause=e
+            )
+            error.log()
+            return False
+        except FileNotFoundError as e:
+            logger.error(
+                "認証情報ファイルが見つかりません",
+                data={"credentials_path": str(self.credentials_path), "error": str(e)}
+            )
+            return False
         except Exception as e:
-            logger.error(f"Google Calendar API認証失敗: {e}")
+            logger.error(
+                "Google Calendar API認証失敗",
+                data={"error": str(e), "error_type": type(e).__name__}
+            )
             return False
 
     def get_events(
@@ -158,9 +187,16 @@ class Scheduler:
 
         Returns:
             CalendarEventのリスト
+
+        Raises:
+            ScheduleError: 認証されていない場合
         """
         if not self._service:
-            raise RuntimeError("認証されていません。先にauthenticate()を呼び出してください")
+            raise ScheduleError(
+                code=ErrorCode.AUTH_FAILED,
+                message="認証されていません。先にauthenticate()を呼び出してください",
+                severity=ErrorSeverity.ERROR
+            )
 
         if start_date is None:
             start_date = datetime.now(self.timezone).replace(hour=0, minute=0, second=0, microsecond=0)
@@ -168,25 +204,40 @@ class Scheduler:
             end_date = start_date + timedelta(days=7)
 
         try:
-            events_result = self._service.events().list(
-                calendarId=calendar_id,
-                timeMin=start_date.isoformat(),
-                timeMax=end_date.isoformat(),
-                singleEvents=True,
-                orderBy='startTime'
-            ).execute()
+            with PerformanceTimer(logger, "get_events"):
+                events_result = self._service.events().list(
+                    calendarId=calendar_id,
+                    timeMin=start_date.isoformat(),
+                    timeMax=end_date.isoformat(),
+                    singleEvents=True,
+                    orderBy='startTime'
+                ).execute()
 
-            events = []
-            for item in events_result.get('items', []):
-                event = self._parse_event(item)
-                if event:
-                    events.append(event)
+                events = []
+                for item in events_result.get('items', []):
+                    event = self._parse_event(item)
+                    if event:
+                        events.append(event)
 
-            logger.info(f"{len(events)}件のイベントを取得")
-            return events
+                logger.info(
+                    "イベントを取得",
+                    data={
+                        "count": len(events),
+                        "start": start_date.isoformat(),
+                        "end": end_date.isoformat()
+                    }
+                )
+                return events
 
+        except ScheduleError:
+            raise
         except Exception as e:
-            logger.error(f"イベント取得エラー: {e}")
+            error = ScheduleError(
+                code=ErrorCode.SCHEDULE_FETCH_FAILED,
+                message=f"イベント取得エラー: {e}",
+                cause=e
+            )
+            error.log()
             return []
 
     def _parse_event(self, item: dict) -> Optional[CalendarEvent]:
@@ -221,8 +272,17 @@ class Scheduler:
                 description=item.get('description'),
                 is_all_day=is_all_day
             )
+        except KeyError as e:
+            logger.warning(
+                "イベントパースエラー: 必須フィールドが見つかりません",
+                data={"missing_field": str(e), "event_id": item.get('id')}
+            )
+            return None
         except Exception as e:
-            logger.warning(f"イベントパースエラー: {e}")
+            logger.warning(
+                "イベントパースエラー",
+                data={"error": str(e), "event_id": item.get('id')}
+            )
             return None
 
     def find_free_slots(
@@ -271,7 +331,10 @@ class Scheduler:
             if is_free:
                 free_slots.append(slot)
 
-        logger.info(f"{len(free_slots)}件の空き時間を検出")
+        logger.info(
+            "空き時間を検出",
+            data={"count": len(free_slots), "duration_minutes": duration_minutes}
+        )
         return free_slots
 
     def _generate_candidate_slots(
@@ -360,7 +423,15 @@ class Scheduler:
         # スコア順にソート
         proposals.sort(key=lambda p: p.score, reverse=True)
 
-        logger.info(f"{len(proposals)}件の会議提案を生成")
+        logger.info(
+            "会議提案を生成",
+            data={
+                "count": len(proposals),
+                "title": title,
+                "duration": duration_minutes,
+                "attendees_count": len(attendees)
+            }
+        )
         return proposals
 
     def create_event(
@@ -391,9 +462,16 @@ class Scheduler:
 
         Returns:
             作成されたイベントのID（失敗時はNone）
+
+        Raises:
+            ScheduleError: 認証されていない場合やイベント作成に失敗した場合
         """
         if not self._service:
-            raise RuntimeError("認証されていません")
+            raise ScheduleError(
+                code=ErrorCode.AUTH_FAILED,
+                message="認証されていません",
+                severity=ErrorSeverity.ERROR
+            )
 
         if self.confirmation_required:
             logger.warning("確認モードが有効です。イベント作成には明示的な確認が必要です")
@@ -426,11 +504,25 @@ class Scheduler:
             ).execute()
 
             event_id = result.get('id')
-            logger.info(f"イベント作成完了: ID={event_id}")
+            logger.info(
+                "イベント作成完了",
+                data={
+                    "event_id": event_id,
+                    "title": title,
+                    "start": start.isoformat(),
+                    "attendees_count": len(attendees) if attendees else 0
+                }
+            )
             return event_id
 
         except Exception as e:
-            logger.error(f"イベント作成エラー: {e}")
+            error = ScheduleError(
+                code=ErrorCode.SCHEDULE_CREATE_FAILED,
+                message=f"イベント作成エラー: {e}",
+                details={"title": title, "start": start.isoformat()},
+                cause=e
+            )
+            error.log()
             return None
 
     def get_today_schedule(self) -> list[CalendarEvent]:

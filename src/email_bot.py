@@ -4,18 +4,25 @@ Email Bot Module - メール処理・要約機能
 Gmail APIを使用してメールを取得し、LLMで要約を生成する
 """
 
-import os
 import base64
 import json
-import logging
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
 from pathlib import Path
 
 from .llm import LLMService, create_llm_service
+from .logging_config import get_logger, RequestContext, PerformanceTimer
+from .errors import (
+    EmailError,
+    AuthError,
+    LLMError,
+    ErrorCode,
+    ErrorContext,
+    ErrorSeverity,
+)
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__, "email")
 
 
 @dataclass
@@ -74,7 +81,7 @@ class EmailBot:
         self.draft_mode = draft_mode
         self._service = None
 
-        logger.info(f"EmailBot初期化: draft_mode={draft_mode}")
+        logger.info("EmailBot初期化", data={"draft_mode": draft_mode})
 
     def authenticate(self) -> bool:
         """
@@ -82,6 +89,9 @@ class EmailBot:
 
         Returns:
             認証成功: True, 失敗: False
+
+        Raises:
+            AuthError: 認証に失敗した場合
         """
         try:
             from google.oauth2.credentials import Credentials
@@ -103,8 +113,10 @@ class EmailBot:
             # トークンの更新または新規取得
             if not creds or not creds.valid:
                 if creds and creds.expired and creds.refresh_token:
+                    logger.info("トークンを更新中")
                     creds.refresh(Request())
                 else:
+                    logger.info("新規認証フローを開始")
                     flow = InstalledAppFlow.from_client_secrets_file(
                         str(self.credentials_path), SCOPES
                     )
@@ -119,8 +131,26 @@ class EmailBot:
             logger.info("Gmail API認証成功")
             return True
 
+        except ImportError as e:
+            error = AuthError(
+                code=ErrorCode.AUTH_CREDENTIALS_MISSING,
+                message="Gmail API認証ライブラリがインストールされていません",
+                details={"missing_package": str(e)},
+                cause=e
+            )
+            error.log()
+            return False
+        except FileNotFoundError as e:
+            logger.error(
+                "認証情報ファイルが見つかりません",
+                data={"credentials_path": str(self.credentials_path), "error": str(e)}
+            )
+            return False
         except Exception as e:
-            logger.error(f"Gmail API認証失敗: {e}")
+            logger.error(
+                "Gmail API認証失敗",
+                data={"error": str(e), "error_type": type(e).__name__}
+            )
             return False
 
     def fetch_unread_emails(self, max_results: int = 10) -> list[Email]:
@@ -132,37 +162,55 @@ class EmailBot:
 
         Returns:
             Emailオブジェクトのリスト
+
+        Raises:
+            EmailError: 認証されていない場合やAPI呼び出しに失敗した場合
         """
         if not self._service:
-            raise RuntimeError("認証されていません。先にauthenticate()を呼び出してください")
+            raise EmailError(
+                code=ErrorCode.AUTH_FAILED,
+                message="認証されていません。先にauthenticate()を呼び出してください",
+                severity=ErrorSeverity.ERROR
+            )
 
         try:
-            # 未読メールを検索
-            results = self._service.users().messages().list(
-                userId='me',
-                q='is:unread',
-                maxResults=max_results
-            ).execute()
-
-            messages = results.get('messages', [])
-            emails = []
-
-            for msg_info in messages:
-                msg = self._service.users().messages().get(
+            with PerformanceTimer(logger, "fetch_unread_emails"):
+                # 未読メールを検索
+                results = self._service.users().messages().list(
                     userId='me',
-                    id=msg_info['id'],
-                    format='full'
+                    q='is:unread',
+                    maxResults=max_results
                 ).execute()
 
-                email = self._parse_message(msg)
-                if email:
-                    emails.append(email)
+                messages = results.get('messages', [])
+                emails = []
 
-            logger.info(f"{len(emails)}件の未読メールを取得")
-            return emails
+                for msg_info in messages:
+                    msg = self._service.users().messages().get(
+                        userId='me',
+                        id=msg_info['id'],
+                        format='full'
+                    ).execute()
 
+                    email = self._parse_message(msg)
+                    if email:
+                        emails.append(email)
+
+                logger.info(
+                    "未読メールを取得",
+                    data={"count": len(emails), "max_results": max_results}
+                )
+                return emails
+
+        except EmailError:
+            raise
         except Exception as e:
-            logger.error(f"メール取得エラー: {e}")
+            error = EmailError(
+                code=ErrorCode.EMAIL_FETCH_FAILED,
+                message=f"メール取得エラー: {e}",
+                cause=e
+            )
+            error.log()
             return []
 
     def _parse_message(self, msg: dict) -> Optional[Email]:
@@ -178,7 +226,11 @@ class EmailBot:
             try:
                 from email.utils import parsedate_to_datetime
                 date = parsedate_to_datetime(date_str)
-            except:
+            except Exception:
+                logger.debug(
+                    "日付パース失敗、現在時刻を使用",
+                    data={"date_str": date_str, "msg_id": msg.get('id')}
+                )
                 date = datetime.now()
 
             return Email(
@@ -193,8 +245,17 @@ class EmailBot:
                 is_unread='UNREAD' in msg.get('labelIds', []),
                 labels=msg.get('labelIds', [])
             )
+        except KeyError as e:
+            logger.warning(
+                "メールパースエラー: 必須フィールドが見つかりません",
+                data={"missing_field": str(e), "msg_id": msg.get('id')}
+            )
+            return None
         except Exception as e:
-            logger.warning(f"メールパースエラー: {e}")
+            logger.warning(
+                "メールパースエラー",
+                data={"error": str(e), "msg_id": msg.get('id')}
+            )
             return None
 
     def _extract_body(self, payload: dict) -> str:
@@ -230,7 +291,10 @@ class EmailBot:
         )
 
         if not response.success:
-            logger.warning(f"LLM分析失敗: {response.error_message}")
+            logger.warning(
+                "LLM分析失敗",
+                data={"email_id": email.id, "error": response.error_message}
+            )
             return EmailSummary(
                 email_id=email.id,
                 subject=email.subject,
@@ -242,6 +306,10 @@ class EmailBot:
 
         try:
             result = json.loads(response.content)
+            logger.debug(
+                "メール要約完了",
+                data={"email_id": email.id, "priority": result.get('priority')}
+            )
             return EmailSummary(
                 email_id=email.id,
                 subject=email.subject,
@@ -251,8 +319,12 @@ class EmailBot:
                 priority=result.get('priority', 'medium'),
                 suggested_reply=result.get('suggested_reply')
             )
-        except json.JSONDecodeError:
+        except json.JSONDecodeError as e:
             # パース失敗時はデフォルト値で返す
+            logger.warning(
+                "LLM応答のJSONパース失敗",
+                data={"email_id": email.id, "error": str(e)}
+            )
             return EmailSummary(
                 email_id=email.id,
                 subject=email.subject,
@@ -272,19 +344,27 @@ class EmailBot:
         Returns:
             EmailSummaryのリスト
         """
-        emails = self.fetch_unread_emails(max_results=max_emails)
-        summaries = []
+        with PerformanceTimer(logger, "summarize_inbox"):
+            emails = self.fetch_unread_emails(max_results=max_emails)
+            summaries = []
 
-        for email in emails:
-            summary = self.summarize_email(email)
-            summaries.append(summary)
-            logger.info(f"要約完了: {email.subject[:30]}...")
+            for email in emails:
+                summary = self.summarize_email(email)
+                summaries.append(summary)
+                logger.info(
+                    "要約完了",
+                    data={"subject": email.subject[:30], "priority": summary.priority}
+                )
 
-        # 優先度順にソート
-        priority_order = {'high': 0, 'medium': 1, 'low': 2}
-        summaries.sort(key=lambda s: priority_order.get(s.priority, 1))
+            # 優先度順にソート
+            priority_order = {'high': 0, 'medium': 1, 'low': 2}
+            summaries.sort(key=lambda s: priority_order.get(s.priority, 1))
 
-        return summaries
+            logger.info(
+                "受信トレイ一括要約完了",
+                data={"total": len(summaries)}
+            )
+            return summaries
 
     def create_draft(self, to: str, subject: str, body: str) -> Optional[str]:
         """
@@ -297,9 +377,16 @@ class EmailBot:
 
         Returns:
             作成された下書きのID（失敗時はNone）
+
+        Raises:
+            EmailError: 認証されていない場合やドラフト作成に失敗した場合
         """
         if not self._service:
-            raise RuntimeError("認証されていません")
+            raise EmailError(
+                code=ErrorCode.AUTH_FAILED,
+                message="認証されていません",
+                severity=ErrorSeverity.ERROR
+            )
 
         if not self.draft_mode:
             logger.warning("Draft modeが無効です。下書きではなく送信が実行されます")
@@ -319,11 +406,20 @@ class EmailBot:
             ).execute()
 
             draft_id = draft.get('id')
-            logger.info(f"下書き作成完了: ID={draft_id}")
+            logger.info(
+                "下書き作成完了",
+                data={"draft_id": draft_id, "to": to, "subject": subject[:30]}
+            )
             return draft_id
 
         except Exception as e:
-            logger.error(f"下書き作成エラー: {e}")
+            error = EmailError(
+                code=ErrorCode.EMAIL_DRAFT_FAILED,
+                message=f"下書き作成エラー: {e}",
+                details={"to": to, "subject": subject},
+                cause=e
+            )
+            error.log()
             return None
 
 

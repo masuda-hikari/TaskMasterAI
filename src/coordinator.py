@@ -4,18 +4,26 @@ Coordinator Module - 中央調整・コマンド処理
 各モジュール間の調整とユーザーコマンドの処理を行う
 """
 
-import logging
+import json
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 from typing import Optional, Callable
+from pathlib import Path
 
 from .email_bot import EmailBot, EmailSummary
 from .scheduler import Scheduler, MeetingProposal
 from .auth import AuthManager, AuthProvider
 from .llm import LLMService, create_llm_service
+from .logging_config import get_logger, RequestContext
+from .errors import (
+    CommandError,
+    TaskMasterError,
+    ErrorCode,
+    ErrorSeverity,
+)
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__, "coordinator")
 
 
 class ActionType(Enum):
@@ -82,7 +90,10 @@ class Coordinator:
         self.audit_log_path = audit_log_path
         self._pending_actions: list[Action] = []
 
-        logger.info("Coordinator初期化完了")
+        logger.info(
+            "Coordinator初期化完了",
+            data={"confirmation_required": confirmation_required}
+        )
 
     def process_command(self, command: str) -> CommandResult:
         """
@@ -94,7 +105,13 @@ class Coordinator:
         Returns:
             CommandResult
         """
+        original_command = command
         command = command.strip().lower()
+
+        logger.debug(
+            "コマンド受信",
+            data={"command": original_command}
+        )
 
         # コマンドのルーティング
         if command.startswith("summarize inbox") or command == "inbox":
@@ -122,6 +139,10 @@ class Coordinator:
             return self._handle_cancel()
 
         else:
+            logger.warning(
+                "不明なコマンド",
+                data={"command": original_command}
+            )
             return CommandResult(
                 success=False,
                 message=f"不明なコマンド: {command}\n'help'で利用可能なコマンドを確認してください"
@@ -130,43 +151,59 @@ class Coordinator:
     def _handle_summarize_inbox(self) -> CommandResult:
         """受信トレイの要約"""
         try:
-            summaries = self.email_bot.summarize_inbox(max_emails=10)
+            with RequestContext(operation="summarize_inbox"):
+                summaries = self.email_bot.summarize_inbox(max_emails=10)
 
-            if not summaries:
-                return CommandResult(
-                    success=True,
-                    message="未読メールはありません。"
+                if not summaries:
+                    logger.info("未読メールなし")
+                    return CommandResult(
+                        success=True,
+                        message="未読メールはありません。"
+                    )
+
+                # 結果をフォーマット
+                lines = ["📧 受信トレイ要約", "=" * 40]
+
+                for i, summary in enumerate(summaries, 1):
+                    priority_icon = {
+                        'high': '🔴',
+                        'medium': '🟡',
+                        'low': '🟢'
+                    }.get(summary.priority, '⚪')
+
+                    lines.append(f"\n{i}. {priority_icon} {summary.subject[:50]}")
+                    lines.append(f"   From: {summary.sender}")
+                    lines.append(f"   {summary.summary}")
+
+                    if summary.action_items:
+                        lines.append("   📋 アクション:")
+                        for item in summary.action_items:
+                            lines.append(f"      - {item}")
+
+                self._log_action("summarize_inbox", f"{len(summaries)}件の要約を生成")
+
+                logger.info(
+                    "受信トレイ要約完了",
+                    data={"count": len(summaries)}
                 )
 
-            # 結果をフォーマット
-            lines = ["📧 受信トレイ要約", "=" * 40]
+                return CommandResult(
+                    success=True,
+                    message="\n".join(lines),
+                    data={"summaries": [s.__dict__ for s in summaries]}
+                )
 
-            for i, summary in enumerate(summaries, 1):
-                priority_icon = {
-                    'high': '🔴',
-                    'medium': '🟡',
-                    'low': '🟢'
-                }.get(summary.priority, '⚪')
-
-                lines.append(f"\n{i}. {priority_icon} {summary.subject[:50]}")
-                lines.append(f"   From: {summary.sender}")
-                lines.append(f"   {summary.summary}")
-
-                if summary.action_items:
-                    lines.append("   📋 アクション:")
-                    for item in summary.action_items:
-                        lines.append(f"      - {item}")
-
-            self._log_action("summarize_inbox", f"{len(summaries)}件の要約を生成")
-
+        except TaskMasterError as e:
+            e.log()
             return CommandResult(
-                success=True,
-                message="\n".join(lines),
-                data={"summaries": [s.__dict__ for s in summaries]}
+                success=False,
+                message=e.to_response().to_user_message()
             )
-
         except Exception as e:
-            logger.error(f"受信トレイ要約エラー: {e}")
+            logger.error(
+                "受信トレイ要約エラー",
+                data={"error": str(e), "error_type": type(e).__name__}
+            )
             return CommandResult(
                 success=False,
                 message=f"エラーが発生しました: {str(e)}"
@@ -178,76 +215,106 @@ class Coordinator:
         # 例: "schedule team meeting with alice@example.com bob@example.com 30min"
 
         try:
-            # デフォルト値
-            title = "Meeting"
-            attendees = []
-            duration = 30
+            with RequestContext(operation="schedule_meeting"):
+                # デフォルト値
+                title = "Meeting"
+                attendees = []
+                duration = 30
 
-            # 簡易パース
-            parts = command.replace("schedule", "").strip().split()
+                # 簡易パース
+                parts = command.replace("schedule", "").strip().split()
 
-            # 会議名を抽出
-            name_parts = []
-            for part in parts:
-                if "@" in part:
-                    attendees.append(part)
-                elif part.endswith("min"):
-                    duration = int(part.replace("min", ""))
-                elif part not in ["with", "for"]:
-                    name_parts.append(part)
+                # 会議名を抽出
+                name_parts = []
+                for part in parts:
+                    if "@" in part:
+                        attendees.append(part)
+                    elif part.endswith("min"):
+                        try:
+                            duration = int(part.replace("min", ""))
+                        except ValueError:
+                            logger.warning(
+                                "無効な時間形式、デフォルト値を使用",
+                                data={"input": part, "default": duration}
+                            )
+                    elif part not in ["with", "for"]:
+                        name_parts.append(part)
 
-            if name_parts:
-                title = " ".join(name_parts).title()
+                if name_parts:
+                    title = " ".join(name_parts).title()
 
-            # 会議提案を取得
-            proposals = self.scheduler.propose_meeting(
-                title=title,
-                duration_minutes=duration,
-                attendees=attendees,
-                max_proposals=5
-            )
+                logger.debug(
+                    "会議スケジュールパース完了",
+                    data={"title": title, "attendees": attendees, "duration": duration}
+                )
 
-            if not proposals:
+                # 会議提案を取得
+                proposals = self.scheduler.propose_meeting(
+                    title=title,
+                    duration_minutes=duration,
+                    attendees=attendees,
+                    max_proposals=5
+                )
+
+                if not proposals:
+                    logger.info(
+                        "空き時間なし",
+                        data={"title": title, "duration": duration}
+                    )
+                    return CommandResult(
+                        success=True,
+                        message="指定された条件で空き時間が見つかりませんでした。"
+                    )
+
+                # 結果をフォーマット
+                lines = [f"📅 '{title}' の会議提案", "=" * 40]
+
+                for i, proposal in enumerate(proposals, 1):
+                    lines.append(f"\n{i}. {proposal.slot}")
+                    lines.append(f"   スコア: {'⭐' * int(proposal.score * 5)}")
+
+                lines.append("\n選択するには 'confirm 番号' を入力してください")
+                lines.append("キャンセルするには 'cancel' を入力してください")
+
+                # 保留アクションとして登録
+                self._pending_actions = [
+                    Action(
+                        type=ActionType.EXTERNAL,
+                        description=f"会議を作成: {p.slot}",
+                        execute=lambda p=p: self.scheduler.create_event(
+                            title=p.title,
+                            start=p.slot.start,
+                            end=p.slot.end,
+                            attendees=p.attendees
+                        ),
+                        requires_confirmation=True
+                    )
+                    for p in proposals
+                ]
+
+                logger.info(
+                    "会議提案生成完了",
+                    data={"title": title, "proposals_count": len(proposals)}
+                )
+
                 return CommandResult(
                     success=True,
-                    message="指定された条件で空き時間が見つかりませんでした。"
+                    message="\n".join(lines),
+                    data={"proposals": [str(p) for p in proposals]},
+                    pending_actions=self._pending_actions
                 )
 
-            # 結果をフォーマット
-            lines = [f"📅 '{title}' の会議提案", "=" * 40]
-
-            for i, proposal in enumerate(proposals, 1):
-                lines.append(f"\n{i}. {proposal.slot}")
-                lines.append(f"   スコア: {'⭐' * int(proposal.score * 5)}")
-
-            lines.append("\n選択するには 'confirm 番号' を入力してください")
-            lines.append("キャンセルするには 'cancel' を入力してください")
-
-            # 保留アクションとして登録
-            self._pending_actions = [
-                Action(
-                    type=ActionType.EXTERNAL,
-                    description=f"会議を作成: {p.slot}",
-                    execute=lambda p=p: self.scheduler.create_event(
-                        title=p.title,
-                        start=p.slot.start,
-                        end=p.slot.end,
-                        attendees=p.attendees
-                    ),
-                    requires_confirmation=True
-                )
-                for p in proposals
-            ]
-
+        except TaskMasterError as e:
+            e.log()
             return CommandResult(
-                success=True,
-                message="\n".join(lines),
-                data={"proposals": [str(p) for p in proposals]},
-                pending_actions=self._pending_actions
+                success=False,
+                message=e.to_response().to_user_message()
             )
-
         except Exception as e:
-            logger.error(f"スケジュールエラー: {e}")
+            logger.error(
+                "スケジュールエラー",
+                data={"error": str(e), "error_type": type(e).__name__, "command": command}
+            )
             return CommandResult(
                 success=False,
                 message=f"エラーが発生しました: {str(e)}"
@@ -256,28 +323,43 @@ class Coordinator:
     def _handle_today_status(self) -> CommandResult:
         """今日のステータス"""
         try:
-            events = self.scheduler.get_today_schedule()
-            schedule_text = self.scheduler.format_schedule(events)
+            with RequestContext(operation="today_status"):
+                events = self.scheduler.get_today_schedule()
+                schedule_text = self.scheduler.format_schedule(events)
 
-            now = datetime.now()
-            lines = [
-                f"📊 {now.strftime('%Y年%m月%d日')} のステータス",
-                "=" * 40,
-                "",
-                "📅 今日の予定:",
-                schedule_text,
-            ]
+                now = datetime.now()
+                lines = [
+                    f"📊 {now.strftime('%Y年%m月%d日')} のステータス",
+                    "=" * 40,
+                    "",
+                    "📅 今日の予定:",
+                    schedule_text,
+                ]
 
-            self._log_action("today_status", "ステータス確認")
+                self._log_action("today_status", "ステータス確認")
 
+                logger.info(
+                    "ステータス取得完了",
+                    data={"events_count": len(events)}
+                )
+
+                return CommandResult(
+                    success=True,
+                    message="\n".join(lines),
+                    data={"events": [e.__dict__ for e in events]}
+                )
+
+        except TaskMasterError as e:
+            e.log()
             return CommandResult(
-                success=True,
-                message="\n".join(lines),
-                data={"events": [e.__dict__ for e in events]}
+                success=False,
+                message=e.to_response().to_user_message()
             )
-
         except Exception as e:
-            logger.error(f"ステータス取得エラー: {e}")
+            logger.error(
+                "ステータス取得エラー",
+                data={"error": str(e), "error_type": type(e).__name__}
+            )
             return CommandResult(
                 success=False,
                 message=f"エラーが発生しました: {str(e)}"
@@ -398,9 +480,6 @@ class Coordinator:
 
     def _log_action(self, action_type: str, description: str) -> None:
         """監査ログに記録"""
-        import json
-        from pathlib import Path
-
         if not self.audit_log_path:
             return
 
@@ -427,12 +506,32 @@ class Coordinator:
             with open(log_path, 'w', encoding='utf-8') as f:
                 json.dump(logs, f, ensure_ascii=False, indent=2)
 
+            logger.debug(
+                "監査ログ記録",
+                data={"action_type": action_type, "description": description}
+            )
+
+        except json.JSONDecodeError as e:
+            logger.warning(
+                "監査ログファイルの読み込みエラー",
+                data={"path": str(self.audit_log_path), "error": str(e)}
+            )
+        except PermissionError as e:
+            logger.warning(
+                "監査ログファイルへの書き込み権限なし",
+                data={"path": str(self.audit_log_path), "error": str(e)}
+            )
         except Exception as e:
-            logger.warning(f"監査ログ記録エラー: {e}")
+            logger.warning(
+                "監査ログ記録エラー",
+                data={"error": str(e), "error_type": type(e).__name__}
+            )
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
+    from .logging_config import configure_logging
+
+    configure_logging(level="INFO", console_output=True, file_output=False)
 
     # テスト実行
     print("=== Coordinator テスト ===")

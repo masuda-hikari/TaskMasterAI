@@ -4,14 +4,20 @@ Billing Module - 課金・サブスクリプション管理
 Stripe APIを使用した課金システムの基盤実装
 """
 
-import logging
+import os
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
 from typing import Optional
-import os
 
-logger = logging.getLogger(__name__)
+from .logging_config import get_logger
+from .errors import (
+    BillingError,
+    ErrorCode,
+    ErrorSeverity,
+)
+
+logger = get_logger(__name__, "billing")
 
 
 class SubscriptionPlan(Enum):
@@ -199,7 +205,9 @@ class BillingService:
         if self.stripe_api_key:
             self._init_stripe()
         else:
-            logger.warning("Stripe APIキーが設定されていません。モックモードで動作します。")
+            logger.warning(
+                "Stripe APIキーが設定されていません。モックモードで動作します。"
+            )
 
     def _init_stripe(self):
         """Stripe SDKの初期化"""
@@ -209,7 +217,10 @@ class BillingService:
             self._stripe = stripe
             logger.info("Stripe SDK初期化完了")
         except ImportError:
-            logger.warning("stripeパッケージがインストールされていません")
+            logger.warning(
+                "stripeパッケージがインストールされていません",
+                data={"package": "stripe"}
+            )
 
     def create_customer(self, user_id: str, email: str, name: Optional[str] = None) -> Optional[str]:
         """
@@ -226,7 +237,10 @@ class BillingService:
         if not self._stripe:
             # モックモード
             customer_id = f"cus_mock_{user_id}"
-            logger.info(f"モックカスタマー作成: {customer_id}")
+            logger.info(
+                "モックカスタマー作成",
+                data={"customer_id": customer_id, "user_id": user_id}
+            )
             return customer_id
 
         try:
@@ -235,10 +249,19 @@ class BillingService:
                 name=name,
                 metadata={"user_id": user_id}
             )
-            logger.info(f"Stripeカスタマー作成完了: {customer.id}")
+            logger.info(
+                "Stripeカスタマー作成完了",
+                data={"customer_id": customer.id, "user_id": user_id, "email": email}
+            )
             return customer.id
         except Exception as e:
-            logger.error(f"カスタマー作成エラー: {e}")
+            error = BillingError(
+                code=ErrorCode.BILLING_STRIPE_ERROR,
+                message=f"カスタマー作成エラー: {e}",
+                details={"user_id": user_id, "email": email},
+                cause=e
+            )
+            error.log()
             return None
 
     def create_subscription(
@@ -270,7 +293,10 @@ class BillingService:
                 current_period_end=None  # 無期限
             )
             self._subscriptions[user_id] = subscription
-            logger.info(f"無料サブスクリプション作成: {user_id}")
+            logger.info(
+                "無料サブスクリプション作成",
+                data={"user_id": user_id, "plan": plan.value}
+            )
             return subscription
 
         if not self._stripe:
@@ -285,7 +311,10 @@ class BillingService:
                 current_period_end=datetime.now() + timedelta(days=30)
             )
             self._subscriptions[user_id] = subscription
-            logger.info(f"モックサブスクリプション作成: {user_id} -> {plan.value}")
+            logger.info(
+                "モックサブスクリプション作成",
+                data={"user_id": user_id, "plan": plan.value, "trial_days": trial_days}
+            )
             return subscription
 
         try:
@@ -298,7 +327,10 @@ class BillingService:
 
             price_id = price_ids.get(plan)
             if not price_id:
-                logger.error(f"プラン {plan.value} の価格IDが設定されていません")
+                logger.error(
+                    "価格IDが設定されていません",
+                    data={"plan": plan.value}
+                )
                 return None
 
             sub_params = {
@@ -323,11 +355,24 @@ class BillingService:
             )
             self._subscriptions[user_id] = subscription
 
-            logger.info(f"サブスクリプション作成完了: {stripe_sub.id}")
+            logger.info(
+                "サブスクリプション作成完了",
+                data={
+                    "subscription_id": stripe_sub.id,
+                    "user_id": user_id,
+                    "plan": plan.value
+                }
+            )
             return subscription
 
         except Exception as e:
-            logger.error(f"サブスクリプション作成エラー: {e}")
+            error = BillingError(
+                code=ErrorCode.BILLING_STRIPE_ERROR,
+                message=f"サブスクリプション作成エラー: {e}",
+                details={"user_id": user_id, "plan": plan.value},
+                cause=e
+            )
+            error.log()
             return None
 
     def get_subscription(self, user_id: str) -> Optional[Subscription]:
@@ -347,11 +392,17 @@ class BillingService:
         """
         subscription = self._subscriptions.get(user_id)
         if not subscription:
-            logger.warning(f"サブスクリプションが見つかりません: {user_id}")
+            logger.warning(
+                "サブスクリプションが見つかりません",
+                data={"user_id": user_id}
+            )
             return False
 
         if subscription.plan == SubscriptionPlan.FREE:
-            logger.warning("無料プランはキャンセルできません")
+            logger.warning(
+                "無料プランはキャンセルできません",
+                data={"user_id": user_id}
+            )
             return False
 
         if not self._stripe:
@@ -359,7 +410,10 @@ class BillingService:
             subscription.cancel_at_period_end = at_period_end
             if not at_period_end:
                 subscription.status = SubscriptionStatus.CANCELED
-            logger.info(f"モックサブスクリプションキャンセル: {user_id}")
+            logger.info(
+                "モックサブスクリプションキャンセル",
+                data={"user_id": user_id, "at_period_end": at_period_end}
+            )
             return True
 
         try:
@@ -373,11 +427,24 @@ class BillingService:
                 self._stripe.Subscription.delete(subscription.stripe_subscription_id)
                 subscription.status = SubscriptionStatus.CANCELED
 
-            logger.info(f"サブスクリプションキャンセル完了: {subscription.stripe_subscription_id}")
+            logger.info(
+                "サブスクリプションキャンセル完了",
+                data={
+                    "subscription_id": subscription.stripe_subscription_id,
+                    "user_id": user_id,
+                    "at_period_end": at_period_end
+                }
+            )
             return True
 
         except Exception as e:
-            logger.error(f"キャンセルエラー: {e}")
+            error = BillingError(
+                code=ErrorCode.BILLING_STRIPE_ERROR,
+                message=f"キャンセルエラー: {e}",
+                details={"user_id": user_id},
+                cause=e
+            )
+            error.log()
             return False
 
     def upgrade_plan(self, user_id: str, new_plan: SubscriptionPlan) -> bool:
@@ -393,18 +460,29 @@ class BillingService:
         """
         subscription = self._subscriptions.get(user_id)
         if not subscription:
-            logger.warning(f"サブスクリプションが見つかりません: {user_id}")
+            logger.warning(
+                "サブスクリプションが見つかりません",
+                data={"user_id": user_id}
+            )
             return False
+
+        old_plan = subscription.plan
 
         if not self._stripe:
             # モックモード
             subscription.plan = new_plan
-            logger.info(f"モックプランアップグレード: {user_id} -> {new_plan.value}")
+            logger.info(
+                "モックプランアップグレード",
+                data={"user_id": user_id, "old_plan": old_plan.value, "new_plan": new_plan.value}
+            )
             return True
 
         # Stripe APIでのプラン変更は実装省略（Webhook処理が必要）
-        logger.info(f"プランアップグレード: {user_id} -> {new_plan.value}")
         subscription.plan = new_plan
+        logger.info(
+            "プランアップグレード",
+            data={"user_id": user_id, "old_plan": old_plan.value, "new_plan": new_plan.value}
+        )
         return True
 
     def check_usage_limit(self, user_id: str, feature: str) -> tuple[bool, str]:
@@ -488,7 +566,9 @@ class MockBillingService(BillingService):
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
+    from .logging_config import configure_logging
+
+    configure_logging(level="INFO", console_output=True, file_output=False)
 
     # テスト実行
     print("=== BillingService テスト ===")
