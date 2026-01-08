@@ -1,0 +1,48 @@
+# Render Blueprint - TaskMasterAI
+# https://render.com/docs/blueprint-spec
+
+services:
+  # Web API サービス
+  - type: web
+    name: taskmasterai-api
+    env: docker
+    dockerfilePath: ./Dockerfile
+    region: oregon
+    plan: free  # 本番は starter 以上推奨
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      - key: APP_ENV
+        value: production
+      # 以下は Render ダッシュボードで設定
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: STRIPE_API_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+
+  # 静的サイト（ランディングページ）
+  - type: web
+    name: taskmasterai-landing
+    env: static
+    staticPublishPath: ./landing
+    buildCommand: echo "No build required"
+    headers:
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

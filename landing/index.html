@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskMasterAI - AIがあなたの仕事を自動化</title>
+    <meta name="description" content="メール管理、カレンダー調整、タスク自動化をAIがサポート。週5時間以上の時間を節約。">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #10b981;
+            --dark: #1f2937;
+            --light: #f9fafb;
+            --gray: #6b7280;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header */
+        header {
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+        }
+
+        header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 70px;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        nav a {
+            color: var(--gray);
+            text-decoration: none;
+            margin-left: 30px;
+            transition: color 0.3s;
+        }
+
+        nav a:hover {
+            color: var(--primary);
+        }
+
+        .cta-btn {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+
+        .cta-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .cta-btn.secondary {
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .cta-btn.secondary:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Hero */
+        .hero {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            padding: 150px 0 100px;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--dark);
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--gray);
+            max-width: 600px;
+            margin: 0 auto 40px;
+        }
+
+        .hero-cta {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            display: inline-block;
+            background: var(--secondary);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            margin-bottom: 20px;
+        }
+
+        /* Features */
+        .features {
+            padding: 100px 0;
+            background: white;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .section-title h2 {
+            font-size: 2.25rem;
+            margin-bottom: 16px;
+        }
+
+        .section-title p {
+            color: var(--gray);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+        }
+
+        .feature-card {
+            padding: 30px;
+            border-radius: 12px;
+            background: var(--light);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background: var(--primary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .feature-card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 12px;
+        }
+
+        .feature-card p {
+            color: var(--gray);
+        }
+
+        /* How it works */
+        .how-it-works {
+            padding: 100px 0;
+            background: var(--light);
+        }
+
+        .steps {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 60px;
+        }
+
+        .step {
+            text-align: center;
+            max-width: 280px;
+        }
+
+        .step-number {
+            width: 60px;
+            height: 60px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0 auto 20px;
+        }
+
+        .step h3 {
+            margin-bottom: 12px;
+        }
+
+        .step p {
+            color: var(--gray);
+        }
+
+        /* Pricing */
+        .pricing {
+            padding: 100px 0;
+            background: white;
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .pricing-card {
+            border: 2px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 40px 30px;
+            text-align: center;
+            transition: border-color 0.3s, transform 0.3s;
+        }
+
+        .pricing-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-5px);
+        }
+
+        .pricing-card.featured {
+            border-color: var(--primary);
+            position: relative;
+        }
+
+        .pricing-card.featured::before {
+            content: 'おすすめ';
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary);
+            color: white;
+            padding: 4px 16px;
+            border-radius: 12px;
+            font-size: 0.875rem;
+        }
+
+        .pricing-card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 16px;
+        }
+
+        .price {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .price span {
+            font-size: 1rem;
+            font-weight: 400;
+            color: var(--gray);
+        }
+
+        .pricing-features {
+            list-style: none;
+            margin: 30px 0;
+            text-align: left;
+        }
+
+        .pricing-features li {
+            padding: 8px 0;
+            color: var(--gray);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .pricing-features li::before {
+            content: '✓';
+            color: var(--secondary);
+            font-weight: bold;
+        }
+
+        /* ROI Section */
+        .roi {
+            padding: 80px 0;
+            background: var(--primary);
+            color: white;
+            text-align: center;
+        }
+
+        .roi h2 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+
+        .roi p {
+            font-size: 1.125rem;
+            opacity: 0.9;
+            max-width: 700px;
+            margin: 0 auto 40px;
+        }
+
+        .roi-stats {
+            display: flex;
+            justify-content: center;
+            gap: 60px;
+            flex-wrap: wrap;
+        }
+
+        .roi-stat {
+            text-align: center;
+        }
+
+        .roi-stat .number {
+            font-size: 3rem;
+            font-weight: 700;
+            display: block;
+        }
+
+        .roi-stat .label {
+            opacity: 0.8;
+        }
+
+        /* Beta Signup */
+        .beta-signup {
+            padding: 100px 0;
+            background: var(--light);
+            text-align: center;
+        }
+
+        .beta-signup h2 {
+            font-size: 2.25rem;
+            margin-bottom: 16px;
+        }
+
+        .beta-signup p {
+            color: var(--gray);
+            max-width: 600px;
+            margin: 0 auto 40px;
+        }
+
+        .signup-form {
+            max-width: 500px;
+            margin: 0 auto;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .signup-form input {
+            flex: 1;
+            min-width: 250px;
+            padding: 16px 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .signup-form input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .signup-form button {
+            padding: 16px 32px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .signup-form button:hover {
+            background: var(--primary-dark);
+        }
+
+        .beta-note {
+            margin-top: 20px;
+            font-size: 0.875rem;
+            color: var(--gray);
+        }
+
+        /* Footer */
+        footer {
+            background: var(--dark);
+            color: white;
+            padding: 60px 0 30px;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .footer-section h4 {
+            font-size: 1rem;
+            margin-bottom: 20px;
+            opacity: 0.9;
+        }
+
+        .footer-section a {
+            display: block;
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            padding: 6px 0;
+            transition: color 0.3s;
+        }
+
+        .footer-section a:hover {
+            color: white;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.5);
+            font-size: 0.875rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            header .container {
+                flex-direction: column;
+                height: auto;
+                padding: 15px 20px;
+            }
+
+            nav {
+                margin-top: 15px;
+            }
+
+            nav a {
+                margin: 0 15px;
+            }
+
+            .roi-stats {
+                gap: 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">TaskMasterAI</div>
+            <nav>
+                <a href="#features">機能</a>
+                <a href="#pricing">料金</a>
+                <a href="#signup">ベータ登録</a>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <span class="badge">ベータテスター募集中</span>
+            <h1>AIがあなたの<br>ルーティンワークを自動化</h1>
+            <p>メール管理、カレンダー調整、タスク管理をAIがサポート。週5時間以上の時間を取り戻しましょう。</p>
+            <div class="hero-cta">
+                <a href="#signup" class="cta-btn">無料でベータ版を試す</a>
+                <a href="#features" class="cta-btn secondary">詳しく見る</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="features" id="features">
+        <div class="container">
+            <div class="section-title">
+                <h2>主な機能</h2>
+                <p>TaskMasterAIはただのチャットボットではありません。あなたの代わりに実際のタスクを実行します。</p>
+            </div>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">📧</div>
+                    <h3>スマートメール管理</h3>
+                    <p>未読メールを自動要約し、優先度順にダイジェストをお届け。返信ドラフトも自動生成します。</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📅</div>
+                    <h3>インテリジェントスケジューリング</h3>
+                    <p>参加者全員の空き時間を自動検索し、最適な会議時間を提案。ダブルブッキングを防止します。</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">✅</div>
+                    <h3>タスク自動化</h3>
+                    <p>定期レポートの作成、ステータス更新、リマインダー送信など、繰り返しタスクを自動化します。</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔒</div>
+                    <h3>安全性第一</h3>
+                    <p>全てのアクションはあなたの承認が必要。メールの誤送信やスケジュールミスを防ぎます。</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>透明な監査ログ</h3>
+                    <p>AIが行った全ての操作を記録。いつでも確認・取り消しが可能です。</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔗</div>
+                    <h3>サービス連携</h3>
+                    <p>Gmail、Google Calendar、Slack、Trello等と連携。お使いのツールをそのまま活用できます。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="how-it-works">
+        <div class="container">
+            <div class="section-title">
+                <h2>使い方は簡単</h2>
+                <p>3ステップで時間節約を始められます</p>
+            </div>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3>アカウント連携</h3>
+                    <p>Gmail、Google Calendarなどのアカウントを安全に連携します（OAuth認証）</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3>AIに指示</h3>
+                    <p>「今日の重要メールをまとめて」「来週の空き時間を探して」など自然言語で指示</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3>確認して実行</h3>
+                    <p>AIの提案を確認し、承認するだけ。安全かつ効率的に作業が完了します</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="roi">
+        <div class="container">
+            <h2>あなたの時間を取り戻す</h2>
+            <p>TaskMasterAIユーザーは平均して週5時間以上のルーティンワークを削減しています。</p>
+            <div class="roi-stats">
+                <div class="roi-stat">
+                    <span class="number">5+</span>
+                    <span class="label">週あたり節約時間</span>
+                </div>
+                <div class="roi-stat">
+                    <span class="number">40x</span>
+                    <span class="label">投資対効果</span>
+                </div>
+                <div class="roi-stat">
+                    <span class="number">100%</span>
+                    <span class="label">操作の透明性</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="pricing" id="pricing">
+        <div class="container">
+            <div class="section-title">
+                <h2>シンプルな料金プラン</h2>
+                <p>必要な機能に応じてプランを選択。いつでもアップグレード可能です。</p>
+            </div>
+            <div class="pricing-grid">
+                <div class="pricing-card">
+                    <h3>Free</h3>
+                    <div class="price">$0<span>/月</span></div>
+                    <ul class="pricing-features">
+                        <li>月50件のメール要約</li>
+                        <li>月10件のスケジュール提案</li>
+                        <li>確認モードのみ</li>
+                        <li>基本サポート</li>
+                    </ul>
+                    <a href="#signup" class="cta-btn secondary">無料で始める</a>
+                </div>
+                <div class="pricing-card featured">
+                    <h3>Personal</h3>
+                    <div class="price">$10<span>/月</span></div>
+                    <ul class="pricing-features">
+                        <li>月500件のメール要約</li>
+                        <li>月100件のスケジュール提案</li>
+                        <li>自動アクション機能</li>
+                        <li>2サービス連携</li>
+                    </ul>
+                    <a href="#signup" class="cta-btn">今すぐ始める</a>
+                </div>
+                <div class="pricing-card">
+                    <h3>Pro</h3>
+                    <div class="price">$25<span>/月</span></div>
+                    <ul class="pricing-features">
+                        <li>月2000件のメール要約</li>
+                        <li>月500件のスケジュール提案</li>
+                        <li>全機能利用可能</li>
+                        <li>優先サポート</li>
+                    </ul>
+                    <a href="#signup" class="cta-btn secondary">プランを選択</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="beta-signup" id="signup">
+        <div class="container">
+            <h2>ベータテスターになる</h2>
+            <p>限定ベータ版に参加して、TaskMasterAIをいち早く体験しましょう。ベータテスターには正式リリース時に特別割引をご用意しています。</p>
+            <form class="signup-form" action="#" method="POST" id="betaForm">
+                <input type="email" name="email" placeholder="メールアドレスを入力" required>
+                <button type="submit">登録する</button>
+            </form>
+            <p class="beta-note">※ スパムは送りません。ベータ版の準備ができ次第ご連絡します。</p>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>TaskMasterAI</h4>
+                    <p style="color: rgba(255,255,255,0.7);">AIがあなたのルーティンワークを自動化。時間を取り戻しましょう。</p>
+                </div>
+                <div class="footer-section">
+                    <h4>製品</h4>
+                    <a href="#features">機能</a>
+                    <a href="#pricing">料金</a>
+                    <a href="#">ドキュメント</a>
+                    <a href="#">API</a>
+                </div>
+                <div class="footer-section">
+                    <h4>サポート</h4>
+                    <a href="#">ヘルプセンター</a>
+                    <a href="#">お問い合わせ</a>
+                    <a href="#">ステータス</a>
+                </div>
+                <div class="footer-section">
+                    <h4>法的情報</h4>
+                    <a href="#">プライバシーポリシー</a>
+                    <a href="#">利用規約</a>
+                    <a href="#">セキュリティ</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 TaskMasterAI. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // ベータ登録フォームの処理
+        document.getElementById('betaForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = this.querySelector('input[name="email"]').value;
+
+            // TODO: 実際のバックエンドAPIに送信
+            // 仮の成功メッセージ
+            alert('ありがとうございます！' + email + ' 宛にベータ版の案内をお送りします。');
+            this.reset();
+        });
+
+        // スムーズスクロール
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
