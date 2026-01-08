@@ -1,6 +1,6 @@
-# Google API Setup Guide
+﻿# Google API Setup Guide
 
-TaskMasterAIでGmail・Googleカレンダー連携を行うための設定手順
+TaskMasterAIでGmail・Googleカレンダー連携を行うための設定手順。
 
 ## 1. Google Cloud Projectの作成
 
@@ -23,7 +23,7 @@ TaskMasterAIでGmail・Googleカレンダー連携を行うための設定手順
 
 1. 「APIとサービス」→「OAuth同意画面」
 2. ユーザータイプ: 「外部」（テスト用）または「内部」（組織内）
-3. 必要情報を入力:
+3. 必要情報を入力
    - アプリ名: TaskMasterAI
    - ユーザーサポートメール: your@email.com
    - デベロッパー連絡先: your@email.com
@@ -45,7 +45,7 @@ https://www.googleapis.com/auth/calendar.events
 2. 「認証情報を作成」→「OAuthクライアントID」
 3. アプリケーションの種類: 「デスクトップアプリ」
 4. 名前: "TaskMasterAI Desktop"
-5. 作成後、JSONをダウンロード
+5. 作成後JSONをダウンロード
 
 ## 6. 認証情報の配置
 
@@ -71,7 +71,7 @@ GOOGLE_CLIENT_SECRET=your_client_secret
 
 ## 初回認証フロー
 
-初回実行時、ブラウザが開き認証を求められます:
+初回実行時、ブラウザが開き認証を求められます。
 
 ```bash
 python -m src.cli auth
@@ -84,13 +84,16 @@ python -m src.cli auth
 ## トラブルシューティング
 
 ### "Access blocked" エラー
+
 - OAuth同意画面でテストユーザーに追加されているか確認
 
 ### "Invalid client" エラー
+
 - client_id/client_secretが正しいか確認
 - JSONファイルのパスが正しいか確認
 
 ### "Insufficient scope" エラー
+
 - 必要なスコープがすべて追加されているか確認
 - token.jsonを削除して再認証
 

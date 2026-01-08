@@ -1,8 +1,8 @@
-# TaskMasterAI
+﻿# TaskMasterAI
 
 **Your AI-Powered Virtual Executive Assistant**
 
-TaskMasterAI is like having a personal assistant that handles your mundane digital chores—intelligently. It doesn't just respond to questions; it takes action on your behalf (with your permission) to automate the repetitive tasks that eat up your productive hours.
+TaskMasterAI is like having a personal assistant that handles your mundane digital chores窶琶ntelligently. It doesn't just respond to questions; it takes action on your behalf (with your permission) to automate the repetitive tasks that eat up your productive hours.
 
 ## What TaskMasterAI Does
 
@@ -24,7 +24,7 @@ TaskMasterAI is like having a personal assistant that handles your mundane digit
 ## Key Features
 
 - **AI-Powered Understanding**: Uses advanced AI to understand context, not just keywords
-- **Action-Oriented**: Doesn't just advise—actually performs tasks (with your approval)
+- **Action-Oriented**: Doesn't just advise窶蚤ctually performs tasks (with your approval)
 - **Privacy-First**: Your data stays private. We don't store email content on our servers
 - **Confirmation Mode**: Every action requires your explicit approval until you choose otherwise
 - **Audit Trail**: Full transparency with detailed logs of all automated actions
