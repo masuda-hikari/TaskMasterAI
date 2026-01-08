@@ -269,8 +269,62 @@ def create_app() -> "FastAPI":
 
     app = FastAPI(
         title="TaskMasterAI API",
-        description="AI-Powered Virtual Executive Assistant API",
-        version="0.1.0"
+        description="""
+## AI駆動の仮想エグゼクティブアシスタント API
+
+TaskMasterAI APIは、メール管理、カレンダー管理、タスク自動化のためのRESTfulインターフェースを提供します。
+
+### 主な機能
+
+* **メール管理**: 受信トレイの要約、返信ドラフト作成
+* **カレンダー管理**: 空き時間検索、会議スケジュール提案
+* **使用量追跡**: プラン別の利用状況確認
+
+### 認証
+
+すべての保護されたエンドポイントはJWT Bearer認証を必要とします。
+`/auth/login` でトークンを取得し、`Authorization: Bearer <token>` ヘッダーで送信してください。
+
+### 料金プラン
+
+| プラン | 価格 | メール要約/月 | スケジュール提案/月 |
+|--------|------|--------------|-------------------|
+| Free | 無料 | 50 | 10 |
+| Personal | $10/月 | 500 | 50 |
+| Pro | $25/月 | 2000 | 200 |
+| Team | $15/月/人 | 5000 | 500 |
+        """,
+        version="0.1.0",
+        contact={
+            "name": "TaskMasterAI Support",
+            "email": "support@taskmaster.ai",
+        },
+        license_info={
+            "name": "MIT",
+            "url": "https://opensource.org/licenses/MIT",
+        },
+        openapi_tags=[
+            {
+                "name": "ヘルスチェック",
+                "description": "サービス稼働状態の確認",
+            },
+            {
+                "name": "認証",
+                "description": "ユーザー登録・ログイン・トークン管理",
+            },
+            {
+                "name": "メール",
+                "description": "メール要約・ドラフト作成機能",
+            },
+            {
+                "name": "スケジュール",
+                "description": "カレンダー管理・会議提案機能",
+            },
+            {
+                "name": "使用量",
+                "description": "プラン別使用量の確認",
+            },
+        ],
     )
 
     # CORS設定
@@ -311,7 +365,9 @@ def create_app() -> "FastAPI":
         return user
 
     # ヘルスチェック
-    @app.get("/health", response_model=HealthResponse)
+    @app.get("/health", response_model=HealthResponse, tags=["ヘルスチェック"],
+             summary="サービス稼働状態を確認",
+             description="サービスが正常に稼働しているかを確認します。認証不要。")
     async def health_check():
         """ヘルスチェックエンドポイント"""
         return HealthResponse(
@@ -321,7 +377,9 @@ def create_app() -> "FastAPI":
         )
 
     # 認証エンドポイント
-    @app.post("/auth/register", response_model=UserResponse)
+    @app.post("/auth/register", response_model=UserResponse, tags=["認証"],
+              summary="新規ユーザー登録",
+              description="メールアドレスとパスワードで新規ユーザーを登録します。登録時は無料プランが適用されます。")
     async def register(request: UserCreate):
         """ユーザー登録"""
         user = auth_service.create_user(
@@ -351,7 +409,9 @@ def create_app() -> "FastAPI":
             created_at=user.created_at
         )
 
-    @app.post("/auth/login", response_model=TokenResponse)
+    @app.post("/auth/login", response_model=TokenResponse, tags=["認証"],
+              summary="ログイン",
+              description="メールアドレスとパスワードで認証し、アクセストークンを取得します。トークンは24時間有効です。")
     async def login(request: UserLogin):
         """ログイン"""
         user = auth_service.authenticate(request.email, request.password)
@@ -369,7 +429,9 @@ def create_app() -> "FastAPI":
             expires_in=auth_service.access_token_expire_minutes * 60
         )
 
-    @app.get("/auth/me", response_model=UserResponse)
+    @app.get("/auth/me", response_model=UserResponse, tags=["認証"],
+             summary="現在のユーザー情報を取得",
+             description="認証トークンに紐づくユーザーの情報を返します。")
     async def get_me(current_user: User = Depends(get_current_user)):
         """現在のユーザー情報を取得"""
         return UserResponse(
@@ -381,7 +443,12 @@ def create_app() -> "FastAPI":
         )
 
     # メールエンドポイント
-    @app.post("/email/summarize", response_model=EmailSummaryResponse)
+    @app.post("/email/summarize", response_model=EmailSummaryResponse, tags=["メール"],
+              summary="受信メールを要約",
+              description="受信トレイのメールをAIで要約します。使用量はプランの制限に従います。",
+              responses={
+                  402: {"description": "使用量制限超過。プランのアップグレードが必要です。"}
+              })
     async def summarize_emails(
         request: EmailSummaryRequest,
         current_user: User = Depends(get_current_user)
@@ -411,7 +478,12 @@ def create_app() -> "FastAPI":
         )
 
     # スケジュールエンドポイント
-    @app.post("/schedule/propose", response_model=ScheduleProposalResponse)
+    @app.post("/schedule/propose", response_model=ScheduleProposalResponse, tags=["スケジュール"],
+              summary="会議スケジュールを提案",
+              description="参加者全員の空き時間を検索し、最適な会議時間を提案します。",
+              responses={
+                  402: {"description": "使用量制限超過。プランのアップグレードが必要です。"}
+              })
     async def propose_schedule(
         request: ScheduleProposalRequest,
         current_user: User = Depends(get_current_user)
@@ -443,7 +515,9 @@ def create_app() -> "FastAPI":
         )
 
     # 使用量エンドポイント
-    @app.get("/usage", response_model=UsageResponse)
+    @app.get("/usage", response_model=UsageResponse, tags=["使用量"],
+             summary="使用量と制限を取得",
+             description="現在のプランにおける使用量と残り利用可能回数を返します。")
     async def get_usage(current_user: User = Depends(get_current_user)):
         """使用量を取得"""
         summary = billing_service.get_usage_summary(current_user.id)
