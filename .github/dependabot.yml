@@ -1,0 +1,57 @@
+# Dependabot設定
+# 目的: 依存関係の自動更新でセキュリティ維持
+
+version: 2
+updates:
+  # Python依存関係
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "python"
+    commit-message:
+      prefix: "deps(python):"
+    groups:
+      testing:
+        patterns:
+          - "pytest*"
+          - "coverage*"
+          - "mypy*"
+      linting:
+        patterns:
+          - "black*"
+          - "isort*"
+          - "flake8*"
+      google:
+        patterns:
+          - "google-*"
+      ai:
+        patterns:
+          - "openai*"
+          - "anthropic*"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "ci"
+    commit-message:
+      prefix: "ci(deps):"
+
+  # Docker
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    labels:
+      - "dependencies"
+      - "docker"
+    commit-message:
+      prefix: "docker(deps):"

@@ -1,0 +1,133 @@
+# TaskMasterAI CI/CDパイプライン
+# 目的: 品質保証と自動デプロイ
+
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # テスト・品質チェック
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Python ${{ matrix.python-version }} セットアップ
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+
+      - name: 依存関係インストール
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: コードフォーマット確認（black）
+        run: black --check src/ tests/
+        continue-on-error: true
+
+      - name: インポート順序確認（isort）
+        run: isort --check-only src/ tests/
+        continue-on-error: true
+
+      - name: 型チェック（mypy）
+        run: mypy src/ --ignore-missing-imports
+        continue-on-error: true
+
+      - name: テスト実行
+        run: pytest tests/ -v --cov=src --cov-report=xml --cov-report=term
+        env:
+          TESTING: "true"
+
+      - name: カバレッジレポートアップロード
+        uses: codecov/codecov-action@v4
+        if: matrix.python-version == '3.11'
+        with:
+          file: ./coverage.xml
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+  # セキュリティスキャン
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Python セットアップ
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: 'pip'
+
+      - name: セキュリティツールインストール
+        run: |
+          python -m pip install --upgrade pip
+          pip install bandit safety
+
+      - name: Bandit（セキュリティ静的解析）
+        run: bandit -r src/ -ll
+        continue-on-error: true
+
+      - name: Safety（依存関係脆弱性チェック）
+        run: safety check -r requirements.txt
+        continue-on-error: true
+
+  # Docker ビルド確認
+  docker:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Docker Buildx セットアップ
+        uses: docker/setup-buildx-action@v3
+
+      - name: Docker ビルドテスト
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          tags: taskmaster-ai:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # 本番デプロイ（mainブランチのみ）
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [test, security, docker]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment: production
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Railway デプロイ
+      - name: Railway デプロイ
+        if: ${{ secrets.RAILWAY_TOKEN != '' }}
+        uses: bervProject/railway-deploy@main
+        with:
+          railway_token: ${{ secrets.RAILWAY_TOKEN }}
+          service: taskmaster-ai
+
+      # または Render デプロイ
+      - name: Render デプロイトリガー
+        if: ${{ secrets.RENDER_DEPLOY_HOOK != '' }}
+        run: curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}
+
+  # リリース通知
+  notify:
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: success()
+    steps:
+      - name: デプロイ完了通知
+        run: echo "TaskMasterAI デプロイ完了"
