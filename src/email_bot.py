@@ -13,6 +13,8 @@ from datetime import datetime
 from typing import Optional
 from pathlib import Path
 
+from .llm import LLMService, create_llm_service
+
 logger = logging.getLogger(__name__)
 
 
@@ -54,7 +56,7 @@ class EmailBot:
         self,
         credentials_path: Optional[Path] = None,
         token_path: Optional[Path] = None,
-        llm_api_key: Optional[str] = None,
+        llm_service: Optional[LLMService] = None,
         draft_mode: bool = True
     ):
         """
@@ -63,12 +65,12 @@ class EmailBot:
         Args:
             credentials_path: OAuth認証情報ファイルのパス
             token_path: アクセストークンファイルのパス
-            llm_api_key: LLM APIキー（OpenAI/Anthropic）
+            llm_service: LLMサービスインスタンス
             draft_mode: True=下書きモード（送信しない）
         """
         self.credentials_path = credentials_path or Path("config/credentials/google_oauth.json")
         self.token_path = token_path or Path("config/credentials/token.json")
-        self.llm_api_key = llm_api_key or os.getenv("OPENAI_API_KEY")
+        self.llm_service = llm_service or create_llm_service(use_mock=True)
         self.draft_mode = draft_mode
         self._service = None
 
@@ -220,29 +222,26 @@ class EmailBot:
         Returns:
             EmailSummaryオブジェクト
         """
-        # LLMに送るプロンプト
-        prompt = f"""以下のメールを分析し、JSON形式で回答してください。
+        # LLMサービスを使用してメール分析
+        response = self.llm_service.analyze_email(
+            subject=email.subject,
+            sender=email.sender,
+            body=email.body[:2000]
+        )
 
-件名: {email.subject}
-送信者: {email.sender}
-日時: {email.date}
-本文:
-{email.body[:2000]}  # 長すぎる場合は切り詰め
-
-回答形式:
-{{
-    "summary": "3文以内の要約",
-    "action_items": ["必要なアクション1", "必要なアクション2"],
-    "priority": "high/medium/low",
-    "suggested_reply": "返信が必要な場合の提案（不要ならnull）"
-}}
-"""
-
-        # LLM APIを呼び出し（実際の実装では適切なAPIを使用）
-        response = self._call_llm(prompt)
+        if not response.success:
+            logger.warning(f"LLM分析失敗: {response.error_message}")
+            return EmailSummary(
+                email_id=email.id,
+                subject=email.subject,
+                sender=email.sender,
+                summary="要約生成に失敗しました",
+                action_items=[],
+                priority='medium'
+            )
 
         try:
-            result = json.loads(response)
+            result = json.loads(response.content)
             return EmailSummary(
                 email_id=email.id,
                 subject=email.subject,
@@ -258,50 +257,10 @@ class EmailBot:
                 email_id=email.id,
                 subject=email.subject,
                 sender=email.sender,
-                summary=response[:200],
+                summary=response.content[:200],
                 action_items=[],
                 priority='medium'
             )
-
-    def _call_llm(self, prompt: str) -> str:
-        """
-        LLM APIを呼び出し
-
-        実際の実装ではOpenAI/Anthropic APIを使用
-        """
-        if not self.llm_api_key:
-            # APIキーがない場合はダミー応答
-            logger.warning("LLM APIキーが設定されていません。ダミー応答を返します")
-            return json.dumps({
-                "summary": "要約機能にはLLM APIキーが必要です",
-                "action_items": [],
-                "priority": "medium",
-                "suggested_reply": None
-            })
-
-        try:
-            import openai
-            client = openai.OpenAI(api_key=self.llm_api_key)
-
-            response = client.chat.completions.create(
-                model="gpt-4o-mini",
-                messages=[
-                    {"role": "system", "content": "あなたはメールを分析するアシスタントです。"},
-                    {"role": "user", "content": prompt}
-                ],
-                response_format={"type": "json_object"}
-            )
-
-            return response.choices[0].message.content
-
-        except Exception as e:
-            logger.error(f"LLM API呼び出しエラー: {e}")
-            return json.dumps({
-                "summary": f"要約生成エラー: {str(e)}",
-                "action_items": [],
-                "priority": "medium",
-                "suggested_reply": None
-            })
 
     def summarize_inbox(self, max_emails: int = 10) -> list[EmailSummary]:
         """

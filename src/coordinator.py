@@ -12,6 +12,8 @@ from typing import Optional, Callable
 
 from .email_bot import EmailBot, EmailSummary
 from .scheduler import Scheduler, MeetingProposal
+from .auth import AuthManager, AuthProvider
+from .llm import LLMService, create_llm_service
 
 logger = logging.getLogger(__name__)
 
@@ -56,6 +58,8 @@ class Coordinator:
         self,
         email_bot: Optional[EmailBot] = None,
         scheduler: Optional[Scheduler] = None,
+        auth_manager: Optional[AuthManager] = None,
+        llm_service: Optional[LLMService] = None,
         confirmation_required: bool = True,
         audit_log_path: Optional[str] = None
     ):
@@ -65,10 +69,14 @@ class Coordinator:
         Args:
             email_bot: EmailBotインスタンス
             scheduler: Schedulerインスタンス
+            auth_manager: AuthManagerインスタンス
+            llm_service: LLMServiceインスタンス
             confirmation_required: 外部アクション前に確認が必要か
             audit_log_path: 監査ログのパス
         """
-        self.email_bot = email_bot or EmailBot()
+        self.auth_manager = auth_manager or AuthManager()
+        self.llm_service = llm_service or create_llm_service(use_mock=True)
+        self.email_bot = email_bot or EmailBot(llm_service=self.llm_service)
         self.scheduler = scheduler or Scheduler()
         self.confirmation_required = confirmation_required
         self.audit_log_path = audit_log_path
@@ -100,6 +108,9 @@ class Coordinator:
 
         elif command.startswith("draft reply"):
             return self._handle_draft_reply(command)
+
+        elif command == "auth" or command == "auth status":
+            return self._handle_auth_status()
 
         elif command == "help":
             return self._handle_help()
@@ -280,6 +291,33 @@ class Coordinator:
             message="返信ドラフト機能は開発中です。"
         )
 
+    def _handle_auth_status(self) -> CommandResult:
+        """認証状態の確認"""
+        lines = ["🔐 認証状態", "=" * 40]
+
+        all_status = self.auth_manager.get_all_auth_status()
+
+        for provider, status in all_status.items():
+            icon = "✅" if status.is_authenticated else "❌"
+            lines.append(f"\n{icon} {provider.value.upper()}")
+
+            if status.is_authenticated:
+                if status.user_email:
+                    lines.append(f"   ユーザー: {status.user_email}")
+                lines.append(f"   スコープ: {len(status.scopes)}件")
+            else:
+                lines.append(f"   エラー: {status.error_message}")
+
+        # LLMプロバイダー状態
+        lines.append("\n🤖 LLMプロバイダー")
+        for p in self.llm_service.get_available_providers():
+            lines.append(f"   ✅ {p.value}")
+
+        return CommandResult(
+            success=True,
+            message="\n".join(lines)
+        )
+
     def _handle_help(self) -> CommandResult:
         """ヘルプ表示"""
         help_text = """
@@ -295,6 +333,9 @@ class Coordinator:
   schedule <title> with <emails> <duration>min
                           - 会議をスケジュール
 
+🔐 認証関連:
+  auth, auth status       - 認証状態を確認
+
 ⚙️ システム:
   confirm <番号>          - 保留中のアクションを実行
   cancel                  - 保留中のアクションをキャンセル
@@ -304,6 +345,7 @@ class Coordinator:
   schedule team sync with alice@example.com 30min
   inbox
   status
+  auth
 """
         return CommandResult(success=True, message=help_text)
 
