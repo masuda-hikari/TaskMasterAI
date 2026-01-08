@@ -4,10 +4,13 @@
 name: CI/CD Pipeline
 
 on:
-  push:
-    branches: [master, develop]
-  pull_request:
-    branches: [master]
+  # 一時的に自動トリガー無効化（GitHub Actions Minutes枯渇のため）
+  # push時やPR時は手動実行に変更
+  # push:
+  #   branches: [master, develop]
+  # pull_request:
+  #   branches: [master]
+  workflow_dispatch:  # 手動実行のみ許可
 
 jobs:
   # テスト・品質チェック

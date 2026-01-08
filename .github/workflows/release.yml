@@ -4,9 +4,11 @@
 name: Release
 
 on:
-  push:
-    tags:
-      - 'v*'
+  # 一時的に無効化（GitHub Actions Minutes枯渇のため）
+  # push:
+  #   tags:
+  #     - 'v*'
+  workflow_dispatch:  # 手動実行のみ許可
 
 jobs:
   release:
