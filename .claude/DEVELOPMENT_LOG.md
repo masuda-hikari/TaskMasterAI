@@ -1,40 +1,64 @@
-﻿# TaskMasterAI 髢狗匱繝ｭ繧ｰ
+﻿# TaskMasterAI 開発ログ
 
-## 2025-01-05 - 繝励Ο繧ｸ繧ｧ繧ｯ繝亥・譛溷喧
+## 2025-01-05 - プロジェクト初期化
 
-### 菴懈･ｭ蜀・ｮｹ
-- 繝励Ο繧ｸ繧ｧ繧ｯ繝域ｧ矩縺ｮ菴懈・
-- 荳ｻ隕√ラ繧ｭ繝･繝｡繝ｳ繝医・菴懈・・・LAUDE.md, README.md・・- 蝓ｺ譛ｬ繝｢繧ｸ繝･繝ｼ繝ｫ縺ｮ繧ｹ繧ｱ繝ｫ繝医Φ螳溯｣・  - `src/email_bot.py`: 繝｡繝ｼ繝ｫ蜿門ｾ励・隕∫ｴ・ｩ溯・
-  - `src/scheduler.py`: 繧ｫ繝ｬ繝ｳ繝繝ｼ邂｡逅・・繧ｹ繧ｱ繧ｸ繝･繝ｼ繝ｪ繝ｳ繧ｰ
-  - `src/coordinator.py`: 荳ｭ螟ｮ隱ｿ謨ｴ繝ｻ繧ｳ繝槭Φ繝牙・逅・  - `src/cli.py`: CLI繧ｨ繝ｳ繝医Μ繝ｼ繝昴う繝ｳ繝・- 繝・せ繝医ヵ繧｣繧ｯ繧ｹ繝√Ε縺ｨ繝・せ繝医さ繝ｼ繝峨・菴懈・
-- 險ｭ螳壹ヵ繧｡繧､繝ｫ縺ｮ菴懈・
+### 作業内容
+- プロジェクト構造の作成
+- 主要ドキュメントの作成（CLAUDE.md, README.md）
+- 基本モジュールのスケルトン実装
+  - `src/email_bot.py`: メール取得・要約機能
+  - `src/scheduler.py`: カレンダー管理・スケジューリング
+  - `src/coordinator.py`: 中央調整・コマンド処理
+  - `src/cli.py`: CLIエントリーポイント
+- テストフィクスチャとテストコードの作成
+- 設定ファイルの作成
 
-### 菴懈・繝輔ぃ繧､繝ｫ荳隕ｧ
+### 作成ファイル一覧
 ```
 TaskMasterAI/
-笏懌楳笏 CLAUDE.md                    # 繝励Ο繧ｸ繧ｧ繧ｯ繝医ぎ繝舌リ繝ｳ繧ｹ
-笏懌楳笏 README.md                    # 繝ｦ繝ｼ繧ｶ繝ｼ蜷代￠繝峨く繝･繝｡繝ｳ繝・笏懌楳笏 requirements.txt             # Python萓晏ｭ倬未菫・笏懌楳笏 .gitignore                   # Git髯､螟冶ｨｭ螳・笏懌楳笏 .claude/
-笏・  笏懌楳笏 settings.json            # Claude Code險ｭ螳・笏・  笏披楳笏 DEVELOPMENT_LOG.md       # 縺薙・繝輔ぃ繧､繝ｫ
-笏懌楳笏 src/
-笏・  笏懌楳笏 __init__.py
-笏・  笏懌楳笏 email_bot.py             # 繝｡繝ｼ繝ｫ蜃ｦ逅・Δ繧ｸ繝･繝ｼ繝ｫ
-笏・  笏懌楳笏 scheduler.py             # 繧ｫ繝ｬ繝ｳ繝繝ｼ繝｢繧ｸ繝･繝ｼ繝ｫ
-笏・  笏懌楳笏 coordinator.py           # 荳ｭ螟ｮ隱ｿ謨ｴ繝｢繧ｸ繝･繝ｼ繝ｫ
-笏・  笏披楳笏 cli.py                   # CLI繧､繝ｳ繧ｿ繝ｼ繝輔ぉ繝ｼ繧ｹ
-笏懌楳笏 config/
-笏・  笏懌楳笏 .env.example             # 迺ｰ蠅・､画焚繝・Φ繝励Ξ繝ｼ繝・笏・  笏披楳笏 credentials/             # 隱崎ｨｼ諠・ｱ・・itignore・・笏懌楳笏 tests/
-笏・  笏懌楳笏 __init__.py
-笏・  笏懌楳笏 test_email_bot.py        # 繝｡繝ｼ繝ｫ繝｢繧ｸ繝･繝ｼ繝ｫ繝・せ繝・笏・  笏懌楳笏 test_scheduler.py        # 繧ｹ繧ｱ繧ｸ繝･繝ｼ繝ｩ繝・せ繝・笏・  笏披楳笏 fixtures/
-笏・      笏披楳笏 sample_emails.json   # 繝・せ繝育畑繧ｵ繝ｳ繝励Ν繝・・繧ｿ
-笏披楳笏 docs/
-    笏披楳笏 setup_google_api.md      # Google API險ｭ螳壹ぎ繧､繝・```
+├── CLAUDE.md                    # プロジェクトガバナンス
+├── README.md                    # ユーザー向けドキュメント
+├── requirements.txt             # Python依存関係
+├── .gitignore                   # Git除外設定
+├── .claude/
+│   ├── settings.json            # Claude Code設定
+│   └── DEVELOPMENT_LOG.md       # このファイル
+├── src/
+│   ├── __init__.py
+│   ├── email_bot.py             # メール処理モジュール
+│   ├── scheduler.py             # カレンダーモジュール
+│   ├── coordinator.py           # 中央調整モジュール
+│   └── cli.py                   # CLIインターフェース
+├── config/
+│   ├── .env.example             # 環境変数テンプレート
+│   └── credentials/             # 認証情報（gitignore）
+├── tests/
+│   ├── __init__.py
+│   ├── test_email_bot.py        # メールモジュールテスト
+│   ├── test_scheduler.py        # スケジューラテスト
+│   └── fixtures/
+│       └── sample_emails.json   # テスト用サンプルデータ
+└── docs/
+    └── setup_google_api.md      # Google API設定ガイド
+```
 
-### 謚陦鍋噪豎ｺ螳・1. **Python 3.11+**: 譛譁ｰ讖溯・・亥梛繝偵Φ繝医〇oneInfo・峨ｒ豢ｻ逕ｨ
-2. **遒ｺ隱阪Δ繝ｼ繝峨ョ繝輔か繝ｫ繝・*: 螟夜Κ繧｢繧ｯ繧ｷ繝ｧ繝ｳ蜑阪↓蠢・★遒ｺ隱阪ｒ豎ゅａ繧・3. **繧ｪ繝輔Λ繧､繝ｳ繝・せ繝亥庄閭ｽ**: API萓晏ｭ倥＠縺ｪ縺・ユ繧ｹ繝域ｧ矩
+### 技術的決定
+1. **Python 3.11+**: 最新機能（型ヒント、ZoneInfo等）を活用
+2. **確認モードデフォルト**: 外部アクション前に必ず確認を求める
+3. **オフラインテスト可能**: API依存しないテスト構成
 
-### 谿玖ｪｲ鬘・- [ ] Gmail API螳滄圀縺ｮ隱崎ｨｼ繝輔Ο繝ｼ螳溯｣・- [ ] Google Calendar API邨ｱ蜷・- [ ] LLM API騾｣謳ｺ・・penAI/Anthropic・・- [ ] 隍・焚繧｢繧ｫ繧ｦ繝ｳ繝亥ｯｾ蠢・- [ ] Web UI・亥ｰ・擂險育判・・
-### 谺｡蝗樔ｽ懈･ｭ
-1. 莉ｮ諠ｳ迺ｰ蠅・ｽ懈・縺ｨdependencies繧､繝ｳ繧ｹ繝医・繝ｫ
-2. Gmail API隱崎ｨｼ繝輔Ο繝ｼ縺ｮ螳溯｣・ユ繧ｹ繝・3. 螳滄圀縺ｮ繝｡繝ｼ繝ｫ蜿門ｾ励・隕∫ｴ・・蜍穂ｽ懃｢ｺ隱・
-### 繝｡繝｢
-- 蜿守寢蛹・ 繧ｵ繝悶せ繧ｯ繝ｪ繝励す繝ｧ繝ｳ繝｢繝・Ν・・ersonal $10/譛医懶ｼ・- 蟾ｮ蛻･蛹悶・繧､繝ｳ繝・ 遒ｺ隱阪Δ繝ｼ繝峨↓繧医ｋ螳牙・諤ｧ縲∵凾髢鍋ｯ邏・・蜿ｯ隕門喧
+### 残課題
+- [ ] Gmail API実際の認証フロー実装
+- [ ] Google Calendar API統合
+- [ ] LLM API連携（OpenAI/Anthropic）
+- [ ] 複数アカウント対応
+- [ ] Web UI（将来拡張）
+
+### 次回作業
+1. 仮想環境作成とdependenciesインストール
+2. Gmail API認証フローの実装テスト
+3. 実際のメール取得・要約の動作確認
+
+### メモ
+- 収益化: サブスクリプションモデル（Personal $10/月）
+- 差別化ポイント: 確認モードによる安全性、時間節約の可視化
