@@ -1,10 +1,11 @@
 ﻿# TaskMasterAI - ステータス
 
-最終更新: 2026-01-08
+最終更新: 2026-01-08 (セッション2)
 
 ## 現在の状態
 - 状態: Phase 2 収益化基盤構築完了、デプロイ準備完了
 - 進捗: 課金システム・Web API・デプロイ基盤実装済み
+- ドキュメント: 全API設定ガイド完備
 
 ## 収益化進捗
 - 現在の収益: $0
@@ -53,6 +54,8 @@
 - **外部API認証情報が未取得**: 実環境統合テストおよびデプロイにはGoogle/Stripe/LLMのAPIキーが必要
 
 ## 最近の変更
+- 2026-01-08: セットアップガイド追加（docs/setup_stripe.md, docs/setup_llm_api.md）
+- 2026-01-08: DEVELOPMENT_LOG.md作成
 - 2026-01-08: ランディングページ追加（landing/index.html）
 - 2026-01-08: デプロイ基盤追加（Dockerfile, docker-compose.yml, railway.json, render.yaml）
 - 2026-01-08: requirements.txt更新（FastAPI/PyJWT/Stripe追加）
