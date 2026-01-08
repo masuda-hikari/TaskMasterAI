@@ -39,7 +39,7 @@ jobs:
           git log --pretty=format:"- %s" $(git describe --tags --abbrev=0 HEAD^)..HEAD >> RELEASE_NOTES.md || echo "- 初回リリース" >> RELEASE_NOTES.md
 
       - name: GitHub Release 作成
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           body_path: RELEASE_NOTES.md
           draft: false
