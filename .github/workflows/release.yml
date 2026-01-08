@@ -68,7 +68,7 @@ jobs:
 
       - name: Docker イメージビルド・公開
         if: ${{ secrets.DOCKER_USERNAME != '' }}
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           push: true
