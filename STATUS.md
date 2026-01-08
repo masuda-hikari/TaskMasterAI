@@ -1,10 +1,10 @@
-﻿# TaskMasterAI - ステータス
+# TaskMasterAI - ステータス
 
-最終更新: 2026-01-08 (セッション3)
+最終更新: 2026-01-08 (セッション4)
 
 ## 現在の状態
 - 状態: Phase 2 収益化基盤構築完了、本番運用準備完了
-- 進捗: 課金システム・Web API・デプロイ基盤・データベース永続化実装済み
+- 進捗: 課金システム・Web API・デプロイ基盤・データベース永続化・E2Eテスト実装済み
 - ドキュメント: 全API設定ガイド完備
 
 ## 収益化進捗
@@ -32,15 +32,18 @@
   - Dockerfile（マルチステージビルド）
   - docker-compose.yml（ローカル開発用）
   - railway.json / render.yaml（クラウドデプロイ設定）
-- [x] **Database**: SQLite永続化層（NEW）
+- [x] **Database**: SQLite永続化層
   - ユーザー管理
   - サブスクリプション管理
   - 使用量追跡
   - 監査ログ
+- [x] **E2Eテスト**: 完全なユーザーフローテスト（NEW）
+- [x] **CLI統合テスト**: コマンドライン機能テスト（NEW）
+- [x] **Billing+API統合テスト**: 課金とAPIの統合テスト（NEW）
 
 ## テスト状況
-- 総テスト数: 196件（195パス、1スキップ）
-- 新規追加: coordinatorテスト35件、databaseテスト30件
+- 総テスト数: 261件（260パス、1スキップ）
+- 新規追加: E2Eテスト26件、CLI統合テスト23件、Billing+API統合テスト19件
 - スキップ理由: FastAPI未インストール環境用のテスト
 
 ## 次のアクション
@@ -60,12 +63,10 @@
 - **外部API認証情報が未取得**: 実環境統合テストおよびデプロイにはGoogle/Stripe/LLMのAPIキーが必要
 
 ## 最近の変更
+- 2026-01-08 (セッション4): E2Eテスト26件追加（tests/test_e2e.py）
+- 2026-01-08 (セッション4): CLI統合テスト23件追加（tests/test_cli_integration.py）
+- 2026-01-08 (セッション4): Billing+API統合テスト19件追加（tests/test_billing_api_integration.py）
+- 2026-01-08 (セッション4): テスト総数: 196 → 261件（+65件）
 - 2026-01-08 (セッション3): Database永続化層追加（src/database.py）
 - 2026-01-08 (セッション3): Coordinatorテスト35件追加（tests/test_coordinator.py）
 - 2026-01-08 (セッション3): Databaseテスト30件追加（tests/test_database.py）
-- 2026-01-08: セットアップガイド追加（docs/setup_stripe.md, docs/setup_llm_api.md）
-- 2026-01-08: DEVELOPMENT_LOG.md作成
-- 2026-01-08: ランディングページ追加（landing/index.html）
-- 2026-01-08: デプロイ基盤追加（Dockerfile, docker-compose.yml, railway.json, render.yaml）
-- 2026-01-08: 課金システム（billing.py）追加
-- 2026-01-08: Web API基盤（api.py）追加
