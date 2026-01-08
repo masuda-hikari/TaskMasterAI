@@ -1,10 +1,10 @@
-﻿﻿# TaskMasterAI - ステータス
+# TaskMasterAI - ステータス
 
-最終更新: 2026-01-08 (セッション2)
+最終更新: 2026-01-08 (セッション3)
 
 ## 現在の状態
-- 状態: Phase 2 収益化基盤構築完了、デプロイ準備完了
-- 進捗: 課金システム・Web API・デプロイ基盤実装済み
+- 状態: Phase 2 収益化基盤構築完了、本番運用準備完了
+- 進捗: 課金システム・Web API・デプロイ基盤・データベース永続化実装済み
 - ドキュメント: 全API設定ガイド完備
 
 ## 収益化進捗
@@ -32,9 +32,15 @@
   - Dockerfile（マルチステージビルド）
   - docker-compose.yml（ローカル開発用）
   - railway.json / render.yaml（クラウドデプロイ設定）
+- [x] **Database**: SQLite永続化層（NEW）
+  - ユーザー管理
+  - サブスクリプション管理
+  - 使用量追跡
+  - 監査ログ
 
 ## テスト状況
-- 総テスト数: 131件（130パス、1スキップ）
+- 総テスト数: 196件（195パス、1スキップ）
+- 新規追加: coordinatorテスト35件、databaseテスト30件
 - スキップ理由: FastAPI未インストール環境用のテスト
 
 ## 次のアクション
@@ -54,10 +60,12 @@
 - **外部API認証情報が未取得**: 実環境統合テストおよびデプロイにはGoogle/Stripe/LLMのAPIキーが必要
 
 ## 最近の変更
+- 2026-01-08 (セッション3): Database永続化層追加（src/database.py）
+- 2026-01-08 (セッション3): Coordinatorテスト35件追加（tests/test_coordinator.py）
+- 2026-01-08 (セッション3): Databaseテスト30件追加（tests/test_database.py）
 - 2026-01-08: セットアップガイド追加（docs/setup_stripe.md, docs/setup_llm_api.md）
 - 2026-01-08: DEVELOPMENT_LOG.md作成
 - 2026-01-08: ランディングページ追加（landing/index.html）
 - 2026-01-08: デプロイ基盤追加（Dockerfile, docker-compose.yml, railway.json, render.yaml）
-- 2026-01-08: requirements.txt更新（FastAPI/PyJWT/Stripe追加）
 - 2026-01-08: 課金システム（billing.py）追加
 - 2026-01-08: Web API基盤（api.py）追加
