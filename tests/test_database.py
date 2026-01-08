@@ -18,6 +18,18 @@ from src.database import (
 )
 
 
+@pytest.fixture
+def db():
+    """
+    テスト用データベースフィクスチャ
+
+    テスト終了後に自動でclose()される
+    """
+    database = Database()
+    yield database
+    database.close()
+
+
 class TestDatabaseInitialization:
     """データベース初期化テスト"""
 

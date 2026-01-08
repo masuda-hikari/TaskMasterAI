@@ -2,6 +2,9 @@
 Database Module - データベース永続化層
 
 SQLiteによるデータ永続化を提供
+
+Note: Python 3.12以降、sqlite3のデフォルトdatetimeアダプターは非推奨。
+      本モジュールではISO8601文字列形式で日時を保存。
 """
 
 import logging
@@ -14,6 +17,21 @@ from typing import Optional, Generator
 import json
 
 logger = logging.getLogger(__name__)
+
+
+def _datetime_to_str(dt: datetime) -> str:
+    """datetimeオブジェクトをISO8601文字列に変換（sqlite3警告回避）"""
+    return dt.isoformat()
+
+
+def _str_to_datetime(s: Optional[str]) -> datetime:
+    """ISO8601文字列をdatetimeオブジェクトに変換"""
+    if s is None:
+        return datetime.now()
+    try:
+        return datetime.fromisoformat(s)
+    except (ValueError, TypeError):
+        return datetime.now()
 
 
 @dataclass
@@ -160,6 +178,18 @@ class Database:
             finally:
                 conn.close()
 
+    def close(self) -> None:
+        """
+        データベース接続をクローズ
+
+        インメモリDBの永続接続を明示的に閉じる。
+        テストのクリーンアップやアプリケーション終了時に呼び出す。
+        """
+        if self._persistent_conn is not None:
+            self._persistent_conn.close()
+            self._persistent_conn = None
+            logger.debug("データベース接続をクローズしました")
+
     # ユーザー関連
     def create_user(
         self,
@@ -183,13 +213,14 @@ class Database:
             作成されたユーザー（失敗時はNone）
         """
         now = datetime.now()
+        now_str = _datetime_to_str(now)
         try:
             with self._get_connection() as conn:
                 cursor = conn.cursor()
                 cursor.execute("""
                     INSERT INTO users (id, email, password_hash, name, plan, created_at, updated_at)
                     VALUES (?, ?, ?, ?, ?, ?, ?)
-                """, (user_id, email, password_hash, name, plan, now, now))
+                """, (user_id, email, password_hash, name, plan, now_str, now_str))
                 conn.commit()
 
                 return DBUser(
@@ -253,7 +284,7 @@ class Database:
             return False
 
         updates.append("updated_at = ?")
-        values.append(datetime.now())
+        values.append(_datetime_to_str(datetime.now()))
         values.append(user_id)
 
         with self._get_connection() as conn:
@@ -274,8 +305,8 @@ class Database:
             name=row["name"],
             plan=row["plan"],
             stripe_customer_id=row["stripe_customer_id"],
-            created_at=datetime.fromisoformat(row["created_at"]) if row["created_at"] else datetime.now(),
-            updated_at=datetime.fromisoformat(row["updated_at"]) if row["updated_at"] else datetime.now()
+            created_at=_str_to_datetime(row["created_at"]),
+            updated_at=_str_to_datetime(row["updated_at"])
         )
 
     # サブスクリプション関連
@@ -294,6 +325,10 @@ class Database:
         period_start = period_start or now
         period_end = period_end or datetime(now.year, now.month + 1 if now.month < 12 else 1, 1)
 
+        now_str = _datetime_to_str(now)
+        period_start_str = _datetime_to_str(period_start)
+        period_end_str = _datetime_to_str(period_end)
+
         try:
             with self._get_connection() as conn:
                 cursor = conn.cursor()
@@ -303,7 +338,7 @@ class Database:
                      current_period_start, current_period_end, created_at, updated_at)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """, (subscription_id, user_id, plan, status, stripe_subscription_id,
-                      period_start, period_end, now, now))
+                      period_start_str, period_end_str, now_str, now_str))
                 conn.commit()
 
                 return DBSubscription(
@@ -354,13 +389,13 @@ class Database:
             values.append(status)
         if period_end is not None:
             updates.append("current_period_end = ?")
-            values.append(period_end)
+            values.append(_datetime_to_str(period_end))
 
         if not updates:
             return False
 
         updates.append("updated_at = ?")
-        values.append(datetime.now())
+        values.append(_datetime_to_str(datetime.now()))
         values.append(subscription_id)
 
         with self._get_connection() as conn:
@@ -380,10 +415,10 @@ class Database:
             plan=row["plan"],
             status=row["status"],
             stripe_subscription_id=row["stripe_subscription_id"],
-            current_period_start=datetime.fromisoformat(row["current_period_start"]) if row["current_period_start"] else datetime.now(),
-            current_period_end=datetime.fromisoformat(row["current_period_end"]) if row["current_period_end"] else datetime.now(),
-            created_at=datetime.fromisoformat(row["created_at"]) if row["created_at"] else datetime.now(),
-            updated_at=datetime.fromisoformat(row["updated_at"]) if row["updated_at"] else datetime.now()
+            current_period_start=_str_to_datetime(row["current_period_start"]),
+            current_period_end=_str_to_datetime(row["current_period_end"]),
+            created_at=_str_to_datetime(row["created_at"]),
+            updated_at=_str_to_datetime(row["updated_at"])
         )
 
     # 使用量関連
@@ -408,6 +443,9 @@ class Database:
         """
         import uuid
 
+        period_start_str = _datetime_to_str(period_start)
+        period_end_str = _datetime_to_str(period_end)
+
         with self._get_connection() as conn:
             cursor = conn.cursor()
 
@@ -415,7 +453,7 @@ class Database:
             cursor.execute("""
                 SELECT id, count FROM usage_records
                 WHERE user_id = ? AND feature = ? AND period_start = ?
-            """, (user_id, feature, period_start))
+            """, (user_id, feature, period_start_str))
             row = cursor.fetchone()
 
             if row:
@@ -430,7 +468,7 @@ class Database:
                 cursor.execute("""
                     INSERT INTO usage_records (id, user_id, feature, count, period_start, period_end)
                     VALUES (?, ?, ?, ?, ?, ?)
-                """, (str(uuid.uuid4()), user_id, feature, new_count, period_start, period_end))
+                """, (str(uuid.uuid4()), user_id, feature, new_count, period_start_str, period_end_str))
 
             conn.commit()
             return new_count
@@ -442,24 +480,26 @@ class Database:
         period_start: datetime
     ) -> int:
         """使用量を取得"""
+        period_start_str = _datetime_to_str(period_start)
         with self._get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute("""
                 SELECT count FROM usage_records
                 WHERE user_id = ? AND feature = ? AND period_start = ?
-            """, (user_id, feature, period_start))
+            """, (user_id, feature, period_start_str))
             row = cursor.fetchone()
 
             return row["count"] if row else 0
 
     def get_all_usage(self, user_id: str, period_start: datetime) -> dict[str, int]:
         """全機能の使用量を取得"""
+        period_start_str = _datetime_to_str(period_start)
         with self._get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute("""
                 SELECT feature, count FROM usage_records
                 WHERE user_id = ? AND period_start = ?
-            """, (user_id, period_start))
+            """, (user_id, period_start_str))
 
             return {row["feature"]: row["count"] for row in cursor.fetchall()}
 
