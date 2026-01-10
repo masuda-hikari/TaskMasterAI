@@ -276,6 +276,7 @@ def create_app() -> "FastAPI":
 
     from .billing import BillingService, SubscriptionPlan
     from .coordinator import Coordinator
+    from .database import create_database
 
     app = FastAPI(
         title="TaskMasterAI API",
@@ -354,6 +355,10 @@ TaskMasterAI APIは、メール管理、カレンダー管理、タスク自動�
     auth_service = AuthService()
     billing_service = BillingService()
     security = HTTPBearer()
+
+    # データベース初期化（ベータ登録永続化用）
+    db_path = os.getenv("DATABASE_PATH", "taskmaster.db")
+    db = create_database(db_path)
 
     # 依存性注入
     async def get_current_user(
@@ -553,30 +558,20 @@ TaskMasterAI APIは、メール管理、カレンダー管理、タスク自動�
             actions_executed=summary.get("actions_executed", 0)
         )
 
-    # ベータ登録エンドポイント
-    # インメモリのベータ登録者リスト（本番はDB使用）
-    _beta_signups: set[str] = set()
-
+    # ベータ登録エンドポイント（DB永続化）
     @app.post("/beta/signup", response_model=BetaSignupResponse, tags=["ベータ登録"],
               summary="ベータテスターとして登録",
-              description="メールアドレスでベータテスターのウェイトリストに登録します。認証不要。")
+              description="メールアドレスでベータテスターのウェイトリストに登録します。認証不要。データはDBに永続化されます。")
     async def beta_signup(request: BetaSignupRequest):
-        """ベータ登録"""
+        """ベータ登録（DB永続化）"""
         email = request.email.lower()
-
-        if email in _beta_signups:
-            return BetaSignupResponse(
-                success=True,
-                message="既に登録済みです。ベータ版の準備ができ次第ご連絡します。",
-                email=email
-            )
-
-        _beta_signups.add(email)
-        logger.info(f"ベータ登録: {email} (合計: {len(_beta_signups)}件)")
+        success, message = db.add_beta_signup(email, source="api")
+        count = db.get_beta_signup_count()
+        logger.info(f"ベータ登録: {email} (合計: {count}件)")
 
         return BetaSignupResponse(
-            success=True,
-            message="登録ありがとうございます！ベータ版の準備ができ次第ご連絡します。",
+            success=success,
+            message=message,
             email=email
         )
 
@@ -585,7 +580,7 @@ TaskMasterAI APIは、メール管理、カレンダー管理、タスク自動�
              description="現在のベータ登録者数を返します。")
     async def beta_count():
         """ベータ登録者数"""
-        return {"count": len(_beta_signups)}
+        return {"count": db.get_beta_signup_count()}
 
     # ===== 管理ダッシュボードエンドポイント =====
     # インメモリ管理者リスト（本番は環境変数/DBで管理）
@@ -606,7 +601,7 @@ TaskMasterAI APIは、メール管理、カレンダー管理、タスク自動�
     async def admin_stats(admin: User = Depends(get_admin_user)):
         """システム統計"""
         total_users = len(auth_service._users)
-        beta_signups = len(_beta_signups)
+        beta_signups = db.get_beta_signup_count()
 
         # プラン別ユーザー数
         plan_counts = {"free": 0, "personal": 0, "pro": 0, "team": 0}
@@ -690,12 +685,31 @@ TaskMasterAI APIは、メール管理、カレンダー管理、タスク自動�
 
     @app.get("/admin/beta-emails", tags=["管理"],
              summary="ベータ登録メール一覧を取得",
-             description="ベータ登録者のメールアドレス一覧を返します。")
+             description="ベータ登録者のメールアドレス一覧を返します（DB永続化）。")
     async def admin_beta_emails(admin: User = Depends(get_admin_user)):
-        """ベータ登録メール一覧"""
+        """ベータ登録メール一覧（DB永続化）"""
+        emails = db.get_beta_emails()
         return {
-            "emails": list(_beta_signups),
-            "count": len(_beta_signups)
+            "emails": emails,
+            "count": len(emails)
+        }
+
+    @app.get("/admin/beta-signups", tags=["管理"],
+             summary="ベータ登録詳細一覧を取得",
+             description="ベータ登録者の詳細情報（登録日時、ソース、ステータス）を返します。")
+    async def admin_beta_signups(
+        admin: User = Depends(get_admin_user),
+        limit: int = 100,
+        offset: int = 0
+    ):
+        """ベータ登録詳細一覧"""
+        signups = db.get_beta_signups(limit=limit, offset=offset)
+        total = db.get_beta_signup_count()
+        return {
+            "signups": signups,
+            "total": total,
+            "limit": limit,
+            "offset": offset
         }
 
     @app.get("/admin/health-detailed", tags=["管理"],

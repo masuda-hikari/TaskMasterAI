@@ -1,12 +1,13 @@
 ﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿# TaskMasterAI - ステータス
 
-最終更新: 2026-01-11 (セッション23)
+最終更新: 2026-01-11 (セッション24)
 
 ## 現在の状態
 - 状態: Phase 2 収益化基盤構築完了、本番運用準備完了
-- 進捗: 全機能実装済み、テスト930件パス
+- 進捗: 全機能実装済み、テスト947件パス
 - ドキュメント: 全API設定ガイド完備、CLIリファレンス・APIドキュメント・README充実
 - UI/UX: 管理ダッシュボードUI追加、ランディングページ日本円表記対応完了
+- データ永続化: ベータ登録DB永続化実装完了
 
 ## 収益化進捗
 - 現在の収益: ¥0
@@ -91,13 +92,13 @@
   - FAQ（よくある質問）
 
 ## テスト状況
-- 総テスト数: 930件（929パス、1スキップ）
+- 総テスト数: 947件（946パス、1スキップ）
 - 主要モジュール:
   - email_bot.py: 98%
   - api.py: 91%
   - scheduler.py: 95%
   - coordinator.py: 97%
-  - database.py: 92%
+  - database.py: 95%+
   - logging_config.py: 94%
   - errors.py: 94%
   - auth.py: 94%
@@ -120,6 +121,22 @@
 - **外部API認証情報が未取得**: 実環境統合テストおよびデプロイにはGoogle/Stripe/LLMのAPIキーが必要
 
 ## 最近の変更
+- 2026-01-11 (セッション24): ベータ登録DB永続化実装
+  - src/database.py: ベータ登録テーブル・関連メソッド追加
+    - beta_signupsテーブル（email, created_at, source, status）
+    - add_beta_signup(): ベータ登録追加（重複チェック付き）
+    - get_beta_signup_count(): 登録者数取得
+    - get_beta_signups(): 登録一覧取得（ページネーション対応）
+    - get_beta_emails(): メールアドレス一覧取得
+    - is_beta_registered(): 登録済み確認
+  - src/api.py: ベータ登録APIをDB永続化版に更新
+    - /beta/signup: DB永続化
+    - /beta/count: DB永続化
+    - /admin/beta-emails: DB永続化
+    - /admin/beta-signups: 新規 - 詳細一覧エンドポイント追加
+  - tests/test_beta_db.py: 新規 - ベータ登録DB永続化テスト17件追加
+  - .claude/REVENUE_METRICS.md: 新規 - 収益メトリクス管理ファイル
+  - テスト数: 930 → 947 (+17件)
 - 2026-01-11 (セッション23): 管理ダッシュボードUIフロントエンド実装
   - landing/admin.html: 新規 - 管理者専用ダッシュボードUI
     - JWT認証によるログイン機能

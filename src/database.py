@@ -156,11 +156,23 @@ class Database:
                 )
             """)
 
+            # ベータ登録テーブル
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS beta_signups (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    email TEXT UNIQUE NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    source TEXT DEFAULT 'landing_page',
+                    status TEXT DEFAULT 'pending'
+                )
+            """)
+
             # インデックス作成
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)")
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_subscriptions_user_id ON subscriptions(user_id)")
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_usage_user_feature ON usage_records(user_id, feature)")
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_audit_user_id ON audit_logs(user_id)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_beta_email ON beta_signups(email)")
 
             conn.commit()
 
@@ -550,6 +562,81 @@ class Database:
                 }
                 for row in cursor.fetchall()
             ]
+
+    # ベータ登録関連
+    def add_beta_signup(
+        self,
+        email: str,
+        source: str = "landing_page"
+    ) -> tuple[bool, str]:
+        """
+        ベータ登録を追加
+
+        Args:
+            email: メールアドレス
+            source: 登録元（landing_page, api, etc.）
+
+        Returns:
+            (成功フラグ, メッセージ)
+        """
+        email = email.lower().strip()
+        try:
+            with self._get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    INSERT INTO beta_signups (email, source)
+                    VALUES (?, ?)
+                """, (email, source))
+                conn.commit()
+                logger.info(f"ベータ登録追加: {email}")
+                return True, "登録ありがとうございます！ベータ版の準備ができ次第ご連絡します。"
+        except sqlite3.IntegrityError:
+            logger.debug(f"ベータ登録重複: {email}")
+            return True, "既に登録済みです。ベータ版の準備ができ次第ご連絡します。"
+
+    def get_beta_signup_count(self) -> int:
+        """ベータ登録者数を取得"""
+        with self._get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT COUNT(*) as count FROM beta_signups")
+            row = cursor.fetchone()
+            return row["count"] if row else 0
+
+    def get_beta_signups(self, limit: int = 1000, offset: int = 0) -> list[dict]:
+        """ベータ登録一覧を取得"""
+        with self._get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT email, created_at, source, status
+                FROM beta_signups
+                ORDER BY created_at DESC
+                LIMIT ? OFFSET ?
+            """, (limit, offset))
+
+            return [
+                {
+                    "email": row["email"],
+                    "created_at": row["created_at"],
+                    "source": row["source"],
+                    "status": row["status"]
+                }
+                for row in cursor.fetchall()
+            ]
+
+    def get_beta_emails(self) -> list[str]:
+        """ベータ登録メールアドレス一覧を取得"""
+        with self._get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT email FROM beta_signups ORDER BY created_at DESC")
+            return [row["email"] for row in cursor.fetchall()]
+
+    def is_beta_registered(self, email: str) -> bool:
+        """ベータ登録済みか確認"""
+        email = email.lower().strip()
+        with self._get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT 1 FROM beta_signups WHERE email = ?", (email,))
+            return cursor.fetchone() is not None
 
 
 def create_database(db_path: Optional[str] = None) -> Database:
