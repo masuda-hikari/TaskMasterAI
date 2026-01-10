@@ -587,7 +587,147 @@ TaskMasterAI APIは、メール管理、カレンダー管理、タスク自動�
         """ベータ登録者数"""
         return {"count": len(_beta_signups)}
 
-    logger.info("FastAPIアプリケーション作成完了")
+    # ===== 管理ダッシュボードエンドポイント =====
+    # インメモリ管理者リスト（本番は環境変数/DBで管理）
+    _admin_emails: set[str] = set(os.getenv("ADMIN_EMAILS", "admin@taskmaster.ai").split(","))
+
+    async def get_admin_user(current_user: User = Depends(get_current_user)) -> User:
+        """管理者権限チェック"""
+        if current_user.email not in _admin_emails:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="管理者権限が必要です"
+            )
+        return current_user
+
+    @app.get("/admin/stats", tags=["管理"],
+             summary="システム統計を取得",
+             description="管理者向けのシステム全体の統計情報を返します。")
+    async def admin_stats(admin: User = Depends(get_admin_user)):
+        """システム統計"""
+        total_users = len(auth_service._users)
+        beta_signups = len(_beta_signups)
+
+        # プラン別ユーザー数
+        plan_counts = {"free": 0, "personal": 0, "pro": 0, "team": 0}
+        for user in auth_service._users.values():
+            plan = user.plan.lower()
+            if plan in plan_counts:
+                plan_counts[plan] += 1
+
+        return {
+            "total_users": total_users,
+            "beta_signups": beta_signups,
+            "plan_distribution": plan_counts,
+            "timestamp": datetime.now().isoformat()
+        }
+
+    @app.get("/admin/users", tags=["管理"],
+             summary="ユーザー一覧を取得",
+             description="全ユーザーの一覧を返します（パスワードハッシュは除外）。")
+    async def admin_users(
+        admin: User = Depends(get_admin_user),
+        limit: int = 100,
+        offset: int = 0
+    ):
+        """ユーザー一覧"""
+        users = list(auth_service._users.values())
+        paginated = users[offset:offset + limit]
+
+        return {
+            "users": [
+                {
+                    "id": u.id,
+                    "email": u.email,
+                    "name": u.name,
+                    "plan": u.plan,
+                    "created_at": u.created_at.isoformat()
+                }
+                for u in paginated
+            ],
+            "total": len(users),
+            "limit": limit,
+            "offset": offset
+        }
+
+    @app.get("/admin/revenue", tags=["管理"],
+             summary="収益概算を取得",
+             description="プラン別の月間収益概算を返します。")
+    async def admin_revenue(admin: User = Depends(get_admin_user)):
+        """収益概算"""
+        # 料金表（日本円）
+        plan_prices = {
+            "free": 0,
+            "personal": 1480,
+            "pro": 3980,
+            "team": 2480  # ユーザーあたり
+        }
+
+        plan_counts = {"free": 0, "personal": 0, "pro": 0, "team": 0}
+        for user in auth_service._users.values():
+            plan = user.plan.lower()
+            if plan in plan_counts:
+                plan_counts[plan] += 1
+
+        # 収益計算
+        revenue_by_plan = {}
+        total_revenue = 0
+        for plan, count in plan_counts.items():
+            revenue = count * plan_prices.get(plan, 0)
+            revenue_by_plan[plan] = {
+                "users": count,
+                "price_per_user": plan_prices.get(plan, 0),
+                "revenue": revenue
+            }
+            total_revenue += revenue
+
+        return {
+            "monthly_revenue_jpy": total_revenue,
+            "by_plan": revenue_by_plan,
+            "currency": "JPY",
+            "timestamp": datetime.now().isoformat()
+        }
+
+    @app.get("/admin/beta-emails", tags=["管理"],
+             summary="ベータ登録メール一覧を取得",
+             description="ベータ登録者のメールアドレス一覧を返します。")
+    async def admin_beta_emails(admin: User = Depends(get_admin_user)):
+        """ベータ登録メール一覧"""
+        return {
+            "emails": list(_beta_signups),
+            "count": len(_beta_signups)
+        }
+
+    @app.get("/admin/health-detailed", tags=["管理"],
+             summary="詳細ヘルスチェック",
+             description="各サービスの詳細な稼働状態を返します。")
+    async def admin_health_detailed(admin: User = Depends(get_admin_user)):
+        """詳細ヘルスチェック"""
+        import sys
+
+        checks = {
+            "api": {"status": "healthy", "message": "APIサーバー稼働中"},
+            "auth": {"status": "healthy", "users_loaded": len(auth_service._users)},
+            "billing": {"status": "healthy"},
+            "python_version": sys.version,
+            "fastapi_available": FASTAPI_AVAILABLE,
+            "jwt_available": JWT_AVAILABLE,
+        }
+
+        # 全体ステータス
+        all_healthy = all(
+            c.get("status") == "healthy"
+            for c in checks.values()
+            if isinstance(c, dict) and "status" in c
+        )
+
+        return {
+            "status": "healthy" if all_healthy else "degraded",
+            "checks": checks,
+            "timestamp": datetime.now().isoformat()
+        }
+
+    logger.info("FastAPIアプリケーション作成完了（管理ダッシュボードAPI含む）")
     return app
 
 
