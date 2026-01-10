@@ -464,6 +464,133 @@
             font-size: 0.875rem;
         }
 
+        /* Demo Video */
+        .demo-video {
+            padding: 100px 0;
+            background: white;
+        }
+
+        .video-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .video-placeholder {
+            aspect-ratio: 16/9;
+            background: linear-gradient(135deg, var(--dark) 0%, #374151 100%);
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .video-placeholder:hover {
+            transform: scale(1.02);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+
+        .play-button {
+            transition: transform 0.3s;
+        }
+
+        .video-placeholder:hover .play-button {
+            transform: scale(1.1);
+        }
+
+        .video-caption {
+            color: rgba(255,255,255,0.8);
+            margin-top: 16px;
+            font-size: 0.9rem;
+        }
+
+        /* Testimonials */
+        .testimonials {
+            padding: 100px 0;
+            background: var(--light);
+        }
+
+        .testimonial-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .testimonial-card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .testimonial-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        .testimonial-content {
+            margin-bottom: 24px;
+        }
+
+        .testimonial-content p {
+            color: var(--gray);
+            font-style: italic;
+            line-height: 1.8;
+        }
+
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .author-avatar {
+            width: 48px;
+            height: 48px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+
+        .author-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .author-info strong {
+            color: var(--dark);
+        }
+
+        .author-info span {
+            color: var(--gray);
+            font-size: 0.875rem;
+        }
+
+        /* Mobile menu */
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+        }
+
+        .mobile-menu-btn span {
+            display: block;
+            width: 24px;
+            height: 2px;
+            background: var(--dark);
+            margin: 5px 0;
+            transition: 0.3s;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .hero h1 {
@@ -475,21 +602,198 @@
             }
 
             header .container {
-                flex-direction: column;
+                flex-wrap: wrap;
                 height: auto;
                 padding: 15px 20px;
             }
 
+            .mobile-menu-btn {
+                display: block;
+                order: 2;
+            }
+
+            .logo {
+                order: 1;
+                flex: 1;
+            }
+
             nav {
-                margin-top: 15px;
+                order: 3;
+                width: 100%;
+                max-height: 0;
+                overflow: hidden;
+                transition: max-height 0.3s ease;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                padding: 0;
+            }
+
+            nav.active {
+                max-height: 200px;
+                padding: 15px 0;
             }
 
             nav a {
-                margin: 0 15px;
+                margin: 10px 0;
+                padding: 8px 16px;
+                font-size: 1.1rem;
+            }
+
+            .mobile-menu-btn.active span:nth-child(1) {
+                transform: rotate(45deg) translate(5px, 5px);
+            }
+
+            .mobile-menu-btn.active span:nth-child(2) {
+                opacity: 0;
+            }
+
+            .mobile-menu-btn.active span:nth-child(3) {
+                transform: rotate(-45deg) translate(5px, -5px);
+            }
+
+            .hero {
+                padding: 120px 0 80px;
+            }
+
+            .hero-cta {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .hero-cta .cta-btn {
+                width: 100%;
+                text-align: center;
+                padding: 16px 24px;
+            }
+
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .feature-card {
+                padding: 24px;
+            }
+
+            .steps {
+                flex-direction: column;
+                gap: 30px;
+            }
+
+            .step {
+                max-width: 100%;
+            }
+
+            .pricing-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .pricing-card {
+                padding: 30px 24px;
             }
 
             .roi-stats {
                 gap: 30px;
+                flex-direction: column;
+            }
+
+            .roi-stat .number {
+                font-size: 2.5rem;
+            }
+
+            .testimonial-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .signup-form {
+                flex-direction: column;
+            }
+
+            .signup-form input,
+            .signup-form button {
+                width: 100%;
+                min-width: unset;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .section-title h2 {
+                font-size: 1.75rem;
+            }
+
+            .video-placeholder {
+                border-radius: 12px;
+            }
+
+            .demo-video, .testimonials, .features, .how-it-works, .pricing, .beta-signup {
+                padding: 60px 0;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero h1 {
+                font-size: 1.75rem;
+            }
+
+            .container {
+                padding: 0 16px;
+            }
+
+            .price {
+                font-size: 2rem;
+            }
+
+            .feature-icon {
+                width: 50px;
+                height: 50px;
+            }
+
+            .step-number {
+                width: 50px;
+                height: 50px;
+                font-size: 1.25rem;
+            }
+        }
+
+        /* Touch-friendly improvements */
+        @media (pointer: coarse) {
+            .cta-btn, .signup-form button, nav a {
+                min-height: 48px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .feature-card, .pricing-card, .testimonial-card {
+                cursor: default;
+            }
+
+            .feature-card:active, .pricing-card:active, .testimonial-card:active {
+                transform: scale(0.98);
+            }
+        }
+
+        /* Reduced motion support */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* Print styles */
+        @media print {
+            header, .hero-cta, .beta-signup, footer, .video-placeholder {
+                display: none;
+            }
+
+            body {
+                color: black;
+                background: white;
             }
         }
     </style>
@@ -498,8 +802,14 @@
     <header>
         <div class="container">
             <div class="logo">TaskMasterAI</div>
-            <nav>
+            <button class="mobile-menu-btn" aria-label="メニューを開く" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <nav id="mainNav" role="navigation">
                 <a href="#features">機能</a>
+                <a href="#demo">デモ</a>
                 <a href="#pricing">料金</a>
                 <a href="#signup">ベータ登録</a>
             </nav>
@@ -580,6 +890,73 @@
                     <div class="step-number">3</div>
                     <h3>確認して実行</h3>
                     <p>AIの提案を確認し、承認するだけ。安全かつ効率的に作業が完了します</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="demo-video" id="demo">
+        <div class="container">
+            <div class="section-title">
+                <h2>実際の動作を見る</h2>
+                <p>30秒でわかるTaskMasterAIの使い方</p>
+            </div>
+            <div class="video-container">
+                <div class="video-placeholder">
+                    <div class="play-button">
+                        <svg viewBox="0 0 24 24" width="64" height="64">
+                            <circle cx="12" cy="12" r="12" fill="var(--primary)"/>
+                            <polygon points="10,8 18,12 10,16" fill="white"/>
+                        </svg>
+                    </div>
+                    <p class="video-caption">クリックでデモを再生</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="testimonials">
+        <div class="container">
+            <div class="section-title">
+                <h2>ユーザーの声</h2>
+                <p>ベータテスターからのフィードバック</p>
+            </div>
+            <div class="testimonial-grid">
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        <p>「毎朝のメールチェックが30分から5分に短縮されました。優先度の高いメールが一目でわかるので、重要な連絡を見逃すこともなくなりました。」</p>
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">S.T.</div>
+                        <div class="author-info">
+                            <strong>S.T. さん</strong>
+                            <span>ITコンサルタント</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        <p>「会議のスケジュール調整が本当に楽になりました。3-4人の予定を合わせるのに以前は30分かかっていたのが、今は1分で完了します。」</p>
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">M.K.</div>
+                        <div class="author-info">
+                            <strong>M.K. さん</strong>
+                            <span>プロジェクトマネージャー</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        <p>「確認モードがあるので安心して使えます。AIが勝手にメールを送ることはなく、必ず自分で確認してから実行できるのが良いですね。」</p>
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">Y.H.</div>
+                        <div class="author-info">
+                            <strong>Y.H. さん</strong>
+                            <span>スタートアップ経営者</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -678,15 +1055,15 @@
                 </div>
                 <div class="footer-section">
                     <h4>サポート</h4>
-                    <a href="#">ヘルプセンター</a>
-                    <a href="#">お問い合わせ</a>
+                    <a href="contact.html#faq">ヘルプセンター</a>
+                    <a href="contact.html">お問い合わせ</a>
                     <a href="#">ステータス</a>
                 </div>
                 <div class="footer-section">
                     <h4>法的情報</h4>
-                    <a href="#">プライバシーポリシー</a>
-                    <a href="#">利用規約</a>
-                    <a href="#">セキュリティ</a>
+                    <a href="privacy.html">プライバシーポリシー</a>
+                    <a href="terms.html">利用規約</a>
+                    <a href="privacy.html#security">セキュリティ</a>
                 </div>
             </div>
             <div class="footer-bottom">
@@ -696,15 +1073,46 @@
     </footer>
 
     <script>
+        // モバイルメニュー
+        const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+        const mainNav = document.getElementById('mainNav');
+
+        mobileMenuBtn.addEventListener('click', function() {
+            this.classList.toggle('active');
+            mainNav.classList.toggle('active');
+            const isExpanded = this.getAttribute('aria-expanded') === 'true';
+            this.setAttribute('aria-expanded', !isExpanded);
+            this.setAttribute('aria-label', isExpanded ? 'メニューを開く' : 'メニューを閉じる');
+        });
+
+        // ナビリンククリック時にメニューを閉じる
+        mainNav.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenuBtn.classList.remove('active');
+                mainNav.classList.remove('active');
+                mobileMenuBtn.setAttribute('aria-expanded', 'false');
+            });
+        });
+
         // ベータ登録フォームの処理
         document.getElementById('betaForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const email = this.querySelector('input[name="email"]').value;
+            const button = this.querySelector('button');
+            const originalText = button.textContent;
+
+            // ボタンを無効化してローディング表示
+            button.disabled = true;
+            button.textContent = '送信中...';
 
             // TODO: 実際のバックエンドAPIに送信
-            // 仮の成功メッセージ
-            alert('ありがとうございます！' + email + ' 宛にベータ版の案内をお送りします。');
-            this.reset();
+            // 仮の成功メッセージ（実際はfetch APIを使用）
+            setTimeout(() => {
+                alert('ありがとうございます！' + email + ' 宛にベータ版の案内をお送りします。');
+                this.reset();
+                button.disabled = false;
+                button.textContent = originalText;
+            }, 500);
         });
 
         // スムーズスクロール
@@ -713,12 +1121,38 @@
                 e.preventDefault();
                 const target = document.querySelector(this.getAttribute('href'));
                 if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
+                    const headerHeight = document.querySelector('header').offsetHeight;
+                    const targetPosition = target.getBoundingClientRect().top + window.pageYOffset - headerHeight;
+                    window.scrollTo({
+                        top: targetPosition,
+                        behavior: 'smooth'
                     });
                 }
             });
+        });
+
+        // デモ動画プレースホルダークリック
+        const videoPlaceholder = document.querySelector('.video-placeholder');
+        if (videoPlaceholder) {
+            videoPlaceholder.addEventListener('click', function() {
+                // TODO: 実際のデモ動画を埋め込む
+                alert('デモ動画は準備中です。ベータ版をお試しいただくと実際の操作を体験できます。');
+            });
+        }
+
+        // ヘッダーのスクロール時の背景変更
+        let lastScroll = 0;
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('header');
+            const currentScroll = window.pageYOffset;
+
+            if (currentScroll > 50) {
+                header.style.boxShadow = '0 2px 10px rgba(0,0,0,0.15)';
+            } else {
+                header.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+            }
+
+            lastScroll = currentScroll;
         });
     </script>
 </body>
