@@ -1,10 +1,10 @@
 ﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿# TaskMasterAI - ステータス
 
-最終更新: 2026-01-10 (セッション18)
+最終更新: 2026-01-10 (セッション19)
 
 ## 現在の状態
 - 状態: Phase 2 収益化基盤構築完了、本番運用準備完了
-- 進捗: 全機能実装済み、テストカバレッジ92%達成
+- 進捗: 全機能実装済み、テストカバレッジ93%達成
 - ドキュメント: 全API設定ガイド完備、CLIリファレンス・APIドキュメント・README充実
 
 ## 収益化進捗
@@ -74,12 +74,13 @@
   - FAQ（よくある質問）
 
 ## テスト状況
-- 総テスト数: 846件（845パス、1スキップ）
-- カバレッジ: 92%（前回90%）
+- 総テスト数: 866件（865パス、1スキップ）
+- カバレッジ: 93%（前回92%）
 - 主要モジュール改善:
-  - coordinator.py: 88% → 97% (+9%)
-  - database.py: 86% → 92% (+6%)
-  - logging_config.py: 88% → 94% (+6%)
+  - scheduler.py: 88% → 95% (+7%)
+  - coordinator.py: 97%（維持）
+  - database.py: 92%（維持）
+  - logging_config.py: 94%（維持）
   - errors.py: 94%（維持）
   - api.py: 88%（維持）
   - auth.py: 94%（維持）
@@ -102,6 +103,18 @@
 - **外部API認証情報が未取得**: 実環境統合テストおよびデプロイにはGoogle/Stripe/LLMのAPIキーが必要
 
 ## 最近の変更
+- 2026-01-10 (セッション19): scheduler.pyカバレッジ向上、93%達成
+  - tests/test_scheduler_extended.py: 新規 - scheduler.pyカバレッジ向上テスト20件追加
+    - authenticate()トークン存在・更新・新規フローテスト
+    - authenticate()一般例外処理テスト（Runtime/Permission/OSError）
+    - get_events()ScheduleError再raiseテスト
+    - find_free_slots()イベント重複チェックテスト
+    - __main__ブロック実行テスト
+    - find_free_slots_offlineエッジケーステスト
+    - MeetingProposalスコアリングテスト
+  - 全体カバレッジ: 92% → 93% (+1%)
+  - scheduler.py: 88% → 95% (+7%)
+  - テスト数: 846 → 866 (+20件)
 - 2026-01-10 (セッション18): ランディングページ・法務対応強化
   - landing/index.html: デモ動画・ユーザーの声セクション追加、モバイル完全対応
   - landing/privacy.html: 新規 - プライバシーポリシー
