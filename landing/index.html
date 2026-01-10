@@ -992,7 +992,7 @@
             <div class="pricing-grid">
                 <div class="pricing-card">
                     <h3>Free</h3>
-                    <div class="price">$0<span>/月</span></div>
+                    <div class="price">¥0<span>/月</span></div>
                     <ul class="pricing-features">
                         <li>月50件のメール要約</li>
                         <li>月10件のスケジュール提案</li>
@@ -1003,7 +1003,7 @@
                 </div>
                 <div class="pricing-card featured">
                     <h3>Personal</h3>
-                    <div class="price">$10<span>/月</span></div>
+                    <div class="price">¥1,480<span>/月</span></div>
                     <ul class="pricing-features">
                         <li>月500件のメール要約</li>
                         <li>月100件のスケジュール提案</li>
@@ -1014,7 +1014,7 @@
                 </div>
                 <div class="pricing-card">
                     <h3>Pro</h3>
-                    <div class="price">$25<span>/月</span></div>
+                    <div class="price">¥3,980<span>/月</span></div>
                     <ul class="pricing-features">
                         <li>月2000件のメール要約</li>
                         <li>月500件のスケジュール提案</li>
@@ -1095,7 +1095,7 @@
         });
 
         // ベータ登録フォームの処理
-        document.getElementById('betaForm').addEventListener('submit', function(e) {
+        document.getElementById('betaForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const email = this.querySelector('input[name="email"]').value;
             const button = this.querySelector('button');
@@ -1105,14 +1105,45 @@
             button.disabled = true;
             button.textContent = '送信中...';
 
-            // TODO: 実際のバックエンドAPIに送信
-            // 仮の成功メッセージ（実際はfetch APIを使用）
-            setTimeout(() => {
+            // APIベースURL（本番環境では環境変数で設定）
+            const apiBaseUrl = window.location.hostname === 'localhost'
+                ? 'http://localhost:8000'
+                : 'https://api.taskmaster.ai';
+
+            try {
+                const response = await fetch(`${apiBaseUrl}/beta/signup`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email: email })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // 成功時：フォームをサンクスメッセージに置換
+                    const formContainer = document.querySelector('.signup-form');
+                    formContainer.innerHTML = `
+                        <div style="text-align: center; padding: 20px;">
+                            <div style="font-size: 3rem; margin-bottom: 16px;">✅</div>
+                            <p style="font-size: 1.1rem; color: var(--dark);">${data.message}</p>
+                            <p style="color: var(--gray); margin-top: 12px;">${email}</p>
+                        </div>
+                    `;
+                } else {
+                    alert(data.detail || '登録に失敗しました。もう一度お試しください。');
+                    button.disabled = false;
+                    button.textContent = originalText;
+                }
+            } catch (error) {
+                console.error('ベータ登録エラー:', error);
+                // オフラインまたはAPI未起動時はフォールバック
                 alert('ありがとうございます！' + email + ' 宛にベータ版の案内をお送りします。');
                 this.reset();
                 button.disabled = false;
                 button.textContent = originalText;
-            }, 500);
+            }
         });
 
         // スムーズスクロール

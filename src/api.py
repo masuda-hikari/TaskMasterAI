@@ -97,6 +97,16 @@ if FASTAPI_AVAILABLE:
         version: str
         timestamp: datetime
 
+    class BetaSignupRequest(BaseModel):
+        """ベータ登録リクエスト"""
+        email: EmailStr
+
+    class BetaSignupResponse(BaseModel):
+        """ベータ登録レスポンス"""
+        success: bool
+        message: str
+        email: str
+
 
 @dataclass
 class User:
@@ -324,6 +334,10 @@ TaskMasterAI APIは、メール管理、カレンダー管理、タスク自動�
                 "name": "使用量",
                 "description": "プラン別使用量の確認",
             },
+            {
+                "name": "ベータ登録",
+                "description": "ベータテスター登録・ウェイトリスト管理",
+            },
         ],
     )
 
@@ -538,6 +552,40 @@ TaskMasterAI APIは、メール管理、カレンダー管理、タスク自動�
             schedule_proposals=summary.get("schedule_proposals", {}),
             actions_executed=summary.get("actions_executed", 0)
         )
+
+    # ベータ登録エンドポイント
+    # インメモリのベータ登録者リスト（本番はDB使用）
+    _beta_signups: set[str] = set()
+
+    @app.post("/beta/signup", response_model=BetaSignupResponse, tags=["ベータ登録"],
+              summary="ベータテスターとして登録",
+              description="メールアドレスでベータテスターのウェイトリストに登録します。認証不要。")
+    async def beta_signup(request: BetaSignupRequest):
+        """ベータ登録"""
+        email = request.email.lower()
+
+        if email in _beta_signups:
+            return BetaSignupResponse(
+                success=True,
+                message="既に登録済みです。ベータ版の準備ができ次第ご連絡します。",
+                email=email
+            )
+
+        _beta_signups.add(email)
+        logger.info(f"ベータ登録: {email} (合計: {len(_beta_signups)}件)")
+
+        return BetaSignupResponse(
+            success=True,
+            message="登録ありがとうございます！ベータ版の準備ができ次第ご連絡します。",
+            email=email
+        )
+
+    @app.get("/beta/count", tags=["ベータ登録"],
+             summary="ベータ登録者数を取得",
+             description="現在のベータ登録者数を返します。")
+    async def beta_count():
+        """ベータ登録者数"""
+        return {"count": len(_beta_signups)}
 
     logger.info("FastAPIアプリケーション作成完了")
     return app
