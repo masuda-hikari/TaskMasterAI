@@ -371,14 +371,20 @@ class TestSchedulerFindFreeSlots:
         scheduler._service = MagicMock()
 
         tz = ZoneInfo("Asia/Tokyo")
-        now = datetime.now(tz).replace(hour=9, minute=0, second=0, microsecond=0)
+        # 明日の営業時間開始時を使用（現在時刻の影響を避ける）
+        tomorrow = (datetime.now(tz) + timedelta(days=1)).replace(
+            hour=9, minute=0, second=0, microsecond=0
+        )
+        # 平日であることを確認（土日の場合は月曜まで進める）
+        while tomorrow.weekday() >= 5:  # 5=土, 6=日
+            tomorrow += timedelta(days=1)
 
         test_events = [
             CalendarEvent(
                 id='event1',
                 summary='Holiday',
-                start=now,
-                end=now + timedelta(days=1),
+                start=tomorrow,
+                end=tomorrow + timedelta(days=1),
                 is_all_day=True
             )
         ]
@@ -386,8 +392,8 @@ class TestSchedulerFindFreeSlots:
         with patch.object(scheduler, 'get_events', return_value=test_events):
             slots = scheduler.find_free_slots(
                 duration_minutes=30,
-                start_date=now,
-                end_date=now + timedelta(hours=4)
+                start_date=tomorrow,
+                end_date=tomorrow + timedelta(hours=4)
             )
 
         # 終日イベントは重複チェックに含まれないので、スロットは見つかる
