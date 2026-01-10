@@ -1,10 +1,10 @@
 ﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿# TaskMasterAI - ステータス
 
-最終更新: 2026-01-10 (セッション20)
+最終更新: 2026-01-10 (セッション21)
 
 ## 現在の状態
 - 状態: Phase 2 収益化基盤構築完了、本番運用準備完了
-- 進捗: 全機能実装済み、テストカバレッジ93%達成
+- 進捗: 全機能実装済み、テストカバレッジ94%達成
 - ドキュメント: 全API設定ガイド完備、CLIリファレンス・APIドキュメント・README充実
 - UI/UX: ランディングページ日本円表記対応完了
 
@@ -75,15 +75,16 @@
   - FAQ（よくある質問）
 
 ## テスト状況
-- 総テスト数: 874件（873パス、1スキップ）
-- カバレッジ: 93%維持
+- 総テスト数: 918件（917パス、1スキップ）
+- カバレッジ: 94%達成
 - 主要モジュール改善:
-  - scheduler.py: 88% → 95% (+7%)
+  - email_bot.py: 89% → 98% (+9%) - NEW
+  - api.py: 89% → 91% (+2%) - NEW
+  - scheduler.py: 95%（維持）
   - coordinator.py: 97%（維持）
   - database.py: 92%（維持）
   - logging_config.py: 94%（維持）
   - errors.py: 94%（維持）
-  - api.py: 88%（維持）
   - auth.py: 94%（維持）
   - billing.py: 96%（維持）
 
@@ -104,6 +105,23 @@
 - **外部API認証情報が未取得**: 実環境統合テストおよびデプロイにはGoogle/Stripe/LLMのAPIキーが必要
 
 ## 最近の変更
+- 2026-01-10 (セッション21): カバレッジ大幅向上、94%達成
+  - tests/test_email_bot_extended.py: 新規 - email_bot.pyカバレッジ向上テスト15件追加
+    - authenticate()トークン存在・更新・新規フローテスト
+    - fetch_unread_emails()のEmailError再raiseテスト
+    - summarize_text_offlineエッジケーステスト
+  - tests/test_api_extended2.py: 新規 - api.pyカバレッジ向上テスト16件追加
+    - AuthServiceモックトークン検証テスト
+    - FastAPI未インストール時エラーテスト
+    - メール要約・スケジュール提案成功パステスト
+  - tests/test_llm_extended.py: 新規 - llm.pyカバレッジテスト13件追加
+    - BaseLLMClient抽象メソッドテスト
+    - MockLLMClient動作テスト
+    - LLMResponse構造テスト
+  - 全体カバレッジ: 93% → 94% (+1%)
+  - email_bot.py: 89% → 98% (+9%)
+  - api.py: 89% → 91% (+2%)
+  - テスト数: 874 → 918 (+44件)
 - 2026-01-10 (セッション20): ベータ登録機能・日本円対応
   - landing/index.html: 価格表記を$から¥（日本円）に変更
     - Free: ¥0、Personal: ¥1,480/月、Pro: ¥3,980/月
