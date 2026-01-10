@@ -1,0 +1,1295 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理ダッシュボード - TaskMasterAI</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --dark: #1f2937;
+            --light: #f9fafb;
+            --gray: #6b7280;
+            --gray-light: #e5e7eb;
+            --sidebar-width: 260px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            color: var(--dark);
+            line-height: 1.6;
+            background: var(--light);
+        }
+
+        /* Login Screen */
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+        }
+
+        .login-box {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .login-box h1 {
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .login-box p {
+            color: var(--gray);
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--gray-light);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            width: 100%;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background: white;
+            border: 2px solid var(--gray-light);
+            color: var(--dark);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .login-error {
+            background: #fef2f2;
+            color: var(--danger);
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        /* Dashboard Layout */
+        .dashboard {
+            display: none;
+            min-height: 100vh;
+        }
+
+        .dashboard.active {
+            display: flex;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--dark);
+            color: white;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            overflow-y: auto;
+            z-index: 100;
+        }
+
+        .sidebar-header {
+            padding: 24px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar-header .logo {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        .sidebar-header .badge {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            margin-left: 8px;
+        }
+
+        .sidebar-nav {
+            padding: 16px 0;
+        }
+
+        .sidebar-nav a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 24px;
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .sidebar-nav a:hover,
+        .sidebar-nav a.active {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .sidebar-nav a .icon {
+            font-size: 1.25rem;
+        }
+
+        .sidebar-footer {
+            padding: 24px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+        }
+
+        .sidebar-footer .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .sidebar-footer .avatar {
+            width: 40px;
+            height: 40px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+
+        .sidebar-footer .user-details {
+            flex: 1;
+        }
+
+        .sidebar-footer .user-name {
+            font-weight: 500;
+        }
+
+        .sidebar-footer .user-email {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.6);
+        }
+
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            font-size: 0.875rem;
+            transition: color 0.3s;
+        }
+
+        .logout-btn:hover {
+            color: white;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            padding: 24px;
+        }
+
+        .page-header {
+            margin-bottom: 24px;
+        }
+
+        .page-header h1 {
+            font-size: 1.75rem;
+            margin-bottom: 8px;
+        }
+
+        .page-header p {
+            color: var(--gray);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .stat-card .stat-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .stat-card .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .stat-card .stat-icon.blue {
+            background: #dbeafe;
+        }
+
+        .stat-card .stat-icon.green {
+            background: #dcfce7;
+        }
+
+        .stat-card .stat-icon.yellow {
+            background: #fef3c7;
+        }
+
+        .stat-card .stat-icon.purple {
+            background: #f3e8ff;
+        }
+
+        .stat-card .stat-change {
+            font-size: 0.875rem;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .stat-card .stat-change.positive {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .stat-card .stat-change.negative {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+
+        .stat-card .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .stat-card .stat-label {
+            color: var(--gray);
+            font-size: 0.875rem;
+        }
+
+        /* Content Sections */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .card-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--gray-light);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-header h2 {
+            font-size: 1.125rem;
+        }
+
+        .card-body {
+            padding: 24px;
+        }
+
+        /* Table */
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th,
+        .table td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--gray-light);
+        }
+
+        .table th {
+            font-weight: 500;
+            color: var(--gray);
+            font-size: 0.875rem;
+        }
+
+        .table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .table tr:hover {
+            background: var(--light);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .badge-free {
+            background: var(--gray-light);
+            color: var(--gray);
+        }
+
+        .badge-personal {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .badge-pro {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-team {
+            background: #f3e8ff;
+            color: #7c3aed;
+        }
+
+        /* Revenue Chart Placeholder */
+        .chart-placeholder {
+            height: 200px;
+            background: linear-gradient(180deg, #dbeafe 0%, #f0f9ff 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            padding: 20px;
+        }
+
+        .chart-bar {
+            background: var(--primary);
+            width: 40px;
+            border-radius: 4px 4px 0 0;
+            transition: height 0.3s;
+        }
+
+        /* Beta Emails List */
+        .email-list {
+            list-style: none;
+        }
+
+        .email-list li {
+            padding: 12px 0;
+            border-bottom: 1px solid var(--gray-light);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .email-list li:last-child {
+            border-bottom: none;
+        }
+
+        .email-list .email-icon {
+            width: 36px;
+            height: 36px;
+            background: var(--light);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Health Status */
+        .health-grid {
+            display: grid;
+            gap: 12px;
+        }
+
+        .health-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: var(--light);
+            border-radius: 8px;
+        }
+
+        .health-item .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .health-item .status-dot.healthy {
+            background: var(--secondary);
+        }
+
+        .health-item .status-dot.degraded {
+            background: var(--warning);
+        }
+
+        .health-item .status-dot.unhealthy {
+            background: var(--danger);
+        }
+
+        /* Loading Spinner */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--gray-light);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .sidebar-footer {
+                position: relative;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .table {
+                font-size: 0.875rem;
+            }
+
+            .table th,
+            .table td {
+                padding: 8px 12px;
+            }
+        }
+
+        /* Section visibility */
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div class="login-container" id="loginContainer">
+        <div class="login-box">
+            <h1>管理ダッシュボード</h1>
+            <p>TaskMasterAI 管理者専用</p>
+            <div class="login-error" id="loginError"></div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="email">メールアドレス</label>
+                    <input type="email" id="email" name="email" required placeholder="admin@taskmaster.ai">
+                </div>
+                <div class="form-group">
+                    <label for="password">パスワード</label>
+                    <input type="password" id="password" name="password" required placeholder="パスワード">
+                </div>
+                <button type="submit" class="btn btn-primary">ログイン</button>
+            </form>
+            <p style="margin-top: 24px; text-align: center;">
+                <a href="index.html" style="color: var(--primary); text-decoration: none;">← トップページに戻る</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div class="dashboard" id="dashboard">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <span class="logo">TaskMasterAI</span>
+                <span class="badge">Admin</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="active" data-section="overview">
+                    <span class="icon">📊</span>
+                    <span>概要</span>
+                </a>
+                <a href="#" data-section="users">
+                    <span class="icon">👥</span>
+                    <span>ユーザー管理</span>
+                </a>
+                <a href="#" data-section="revenue">
+                    <span class="icon">💰</span>
+                    <span>収益</span>
+                </a>
+                <a href="#" data-section="beta">
+                    <span class="icon">📧</span>
+                    <span>ベータ登録</span>
+                </a>
+                <a href="#" data-section="health">
+                    <span class="icon">🏥</span>
+                    <span>システム状態</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="avatar" id="userAvatar">A</div>
+                    <div class="user-details">
+                        <div class="user-name" id="userName">Admin</div>
+                        <div class="user-email" id="userEmail">admin@taskmaster.ai</div>
+                    </div>
+                </div>
+                <a href="#" class="logout-btn" id="logoutBtn">
+                    <span>🚪</span>
+                    <span>ログアウト</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Overview Section -->
+            <section class="section active" id="overviewSection">
+                <div class="page-header">
+                    <h1>ダッシュボード概要</h1>
+                    <p>システム全体の状態を確認</p>
+                </div>
+
+                <div class="stats-grid" id="statsGrid">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-icon blue">👥</div>
+                            <span class="stat-change positive" id="userChange">-</span>
+                        </div>
+                        <div class="stat-value" id="totalUsers">-</div>
+                        <div class="stat-label">総ユーザー数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-icon green">💰</div>
+                            <span class="stat-change positive" id="revenueChange">-</span>
+                        </div>
+                        <div class="stat-value" id="monthlyRevenue">-</div>
+                        <div class="stat-label">月間収益</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-icon yellow">📧</div>
+                        </div>
+                        <div class="stat-value" id="betaSignups">-</div>
+                        <div class="stat-label">ベータ登録</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-icon purple">📊</div>
+                        </div>
+                        <div class="stat-value" id="paidUsers">-</div>
+                        <div class="stat-label">有料ユーザー</div>
+                    </div>
+                </div>
+
+                <div class="content-grid">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>最近のユーザー</h2>
+                            <a href="#" class="btn btn-secondary" data-section="users">すべて見る</a>
+                        </div>
+                        <div class="card-body">
+                            <table class="table" id="recentUsersTable">
+                                <thead>
+                                    <tr>
+                                        <th>ユーザー</th>
+                                        <th>プラン</th>
+                                        <th>登録日</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Dynamic content -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>プラン分布</h2>
+                        </div>
+                        <div class="card-body">
+                            <div id="planDistribution">
+                                <!-- Dynamic content -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Users Section -->
+            <section class="section" id="usersSection">
+                <div class="page-header">
+                    <h1>ユーザー管理</h1>
+                    <p>登録ユーザーの一覧と管理</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2>ユーザー一覧</h2>
+                    </div>
+                    <div class="card-body">
+                        <table class="table" id="allUsersTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>メール</th>
+                                    <th>名前</th>
+                                    <th>プラン</th>
+                                    <th>登録日</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Dynamic content -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Revenue Section -->
+            <section class="section" id="revenueSection">
+                <div class="page-header">
+                    <h1>収益</h1>
+                    <p>月間収益と内訳</p>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-icon green">💰</div>
+                        </div>
+                        <div class="stat-value" id="revenueTotal">-</div>
+                        <div class="stat-label">月間合計収益</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2>プラン別収益</h2>
+                    </div>
+                    <div class="card-body">
+                        <table class="table" id="revenueTable">
+                            <thead>
+                                <tr>
+                                    <th>プラン</th>
+                                    <th>ユーザー数</th>
+                                    <th>単価</th>
+                                    <th>収益</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Dynamic content -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Beta Section -->
+            <section class="section" id="betaSection">
+                <div class="page-header">
+                    <h1>ベータ登録</h1>
+                    <p>ベータテスター登録者の管理</p>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-icon yellow">📧</div>
+                        </div>
+                        <div class="stat-value" id="betaTotal">-</div>
+                        <div class="stat-label">総登録数</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2>登録メール一覧</h2>
+                    </div>
+                    <div class="card-body">
+                        <ul class="email-list" id="betaEmailList">
+                            <!-- Dynamic content -->
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Health Section -->
+            <section class="section" id="healthSection">
+                <div class="page-header">
+                    <h1>システム状態</h1>
+                    <p>各サービスの稼働状態</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2>ヘルスチェック</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="health-grid" id="healthGrid">
+                            <!-- Dynamic content -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top: 24px;">
+                    <div class="card-header">
+                        <h2>システム情報</h2>
+                    </div>
+                    <div class="card-body">
+                        <div id="systemInfo">
+                            <!-- Dynamic content -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // API Configuration
+        const API_BASE_URL = window.location.hostname === 'localhost'
+            ? 'http://localhost:8000'
+            : 'https://api.taskmaster.ai';
+
+        // State
+        let authToken = localStorage.getItem('adminToken');
+        let currentUser = null;
+
+        // DOM Elements
+        const loginContainer = document.getElementById('loginContainer');
+        const dashboard = document.getElementById('dashboard');
+        const loginForm = document.getElementById('loginForm');
+        const loginError = document.getElementById('loginError');
+        const logoutBtn = document.getElementById('logoutBtn');
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            if (authToken) {
+                checkAuthAndLoadDashboard();
+            }
+            setupEventListeners();
+        });
+
+        // Event Listeners
+        function setupEventListeners() {
+            // Login form
+            loginForm.addEventListener('submit', handleLogin);
+
+            // Logout
+            logoutBtn.addEventListener('click', handleLogout);
+
+            // Navigation
+            document.querySelectorAll('[data-section]').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const section = e.currentTarget.dataset.section;
+                    navigateTo(section);
+                });
+            });
+        }
+
+        // Authentication
+        async function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    showLoginError(error.detail || 'ログインに失敗しました');
+                    return;
+                }
+
+                const data = await response.json();
+                authToken = data.access_token;
+                localStorage.setItem('adminToken', authToken);
+
+                // Get user info
+                await fetchCurrentUser();
+                showDashboard();
+                loadDashboardData();
+
+            } catch (error) {
+                console.error('Login error:', error);
+                showLoginError('サーバーに接続できません');
+            }
+        }
+
+        async function fetchCurrentUser() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth/me`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                if (response.ok) {
+                    currentUser = await response.json();
+                    updateUserInfo();
+                }
+            } catch (error) {
+                console.error('Error fetching user:', error);
+            }
+        }
+
+        function updateUserInfo() {
+            if (currentUser) {
+                document.getElementById('userName').textContent = currentUser.name || 'Admin';
+                document.getElementById('userEmail').textContent = currentUser.email;
+                document.getElementById('userAvatar').textContent =
+                    (currentUser.name || currentUser.email).charAt(0).toUpperCase();
+            }
+        }
+
+        async function checkAuthAndLoadDashboard() {
+            try {
+                await fetchCurrentUser();
+                showDashboard();
+                loadDashboardData();
+            } catch (error) {
+                handleLogout();
+            }
+        }
+
+        function handleLogout(e) {
+            if (e) e.preventDefault();
+            authToken = null;
+            currentUser = null;
+            localStorage.removeItem('adminToken');
+            showLogin();
+        }
+
+        function showLogin() {
+            loginContainer.style.display = 'flex';
+            dashboard.classList.remove('active');
+        }
+
+        function showDashboard() {
+            loginContainer.style.display = 'none';
+            dashboard.classList.add('active');
+        }
+
+        function showLoginError(message) {
+            loginError.textContent = message;
+            loginError.style.display = 'block';
+        }
+
+        // Navigation
+        function navigateTo(section) {
+            // Update nav
+            document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
+            document.querySelector(`[data-section="${section}"]`).classList.add('active');
+
+            // Update sections
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(`${section}Section`).classList.add('active');
+
+            // Load section data
+            loadSectionData(section);
+        }
+
+        function loadSectionData(section) {
+            switch (section) {
+                case 'overview':
+                    loadOverviewData();
+                    break;
+                case 'users':
+                    loadUsersData();
+                    break;
+                case 'revenue':
+                    loadRevenueData();
+                    break;
+                case 'beta':
+                    loadBetaData();
+                    break;
+                case 'health':
+                    loadHealthData();
+                    break;
+            }
+        }
+
+        // Data Loading
+        async function loadDashboardData() {
+            loadOverviewData();
+        }
+
+        async function loadOverviewData() {
+            try {
+                // Load stats
+                const statsResponse = await fetch(`${API_BASE_URL}/admin/stats`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                if (statsResponse.ok) {
+                    const stats = await statsResponse.json();
+                    document.getElementById('totalUsers').textContent = stats.total_users;
+                    document.getElementById('betaSignups').textContent = stats.beta_signups;
+
+                    // Calculate paid users
+                    const paidUsers = (stats.plan_distribution.personal || 0) +
+                                     (stats.plan_distribution.pro || 0) +
+                                     (stats.plan_distribution.team || 0);
+                    document.getElementById('paidUsers').textContent = paidUsers;
+
+                    // Plan distribution
+                    renderPlanDistribution(stats.plan_distribution);
+                }
+
+                // Load revenue
+                const revenueResponse = await fetch(`${API_BASE_URL}/admin/revenue`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                if (revenueResponse.ok) {
+                    const revenue = await revenueResponse.json();
+                    document.getElementById('monthlyRevenue').textContent =
+                        `¥${revenue.monthly_revenue_jpy.toLocaleString()}`;
+                }
+
+                // Load recent users
+                const usersResponse = await fetch(`${API_BASE_URL}/admin/users?limit=5`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                if (usersResponse.ok) {
+                    const data = await usersResponse.json();
+                    renderRecentUsers(data.users);
+                }
+
+            } catch (error) {
+                console.error('Error loading overview:', error);
+            }
+        }
+
+        async function loadUsersData() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/admin/users?limit=100`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    renderAllUsers(data.users);
+                }
+            } catch (error) {
+                console.error('Error loading users:', error);
+            }
+        }
+
+        async function loadRevenueData() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/admin/revenue`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('revenueTotal').textContent =
+                        `¥${data.monthly_revenue_jpy.toLocaleString()}`;
+                    renderRevenueTable(data.by_plan);
+                }
+            } catch (error) {
+                console.error('Error loading revenue:', error);
+            }
+        }
+
+        async function loadBetaData() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/admin/beta-emails`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('betaTotal').textContent = data.count;
+                    renderBetaEmails(data.emails);
+                }
+            } catch (error) {
+                console.error('Error loading beta data:', error);
+            }
+        }
+
+        async function loadHealthData() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/admin/health-detailed`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    renderHealthStatus(data);
+                }
+            } catch (error) {
+                console.error('Error loading health data:', error);
+            }
+        }
+
+        // Rendering
+        function renderPlanDistribution(distribution) {
+            const container = document.getElementById('planDistribution');
+            const plans = [
+                { key: 'free', label: 'Free', class: 'badge-free' },
+                { key: 'personal', label: 'Personal', class: 'badge-personal' },
+                { key: 'pro', label: 'Pro', class: 'badge-pro' },
+                { key: 'team', label: 'Team', class: 'badge-team' }
+            ];
+
+            container.innerHTML = plans.map(plan => `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--gray-light);">
+                    <span class="badge ${plan.class}">${plan.label}</span>
+                    <strong>${distribution[plan.key] || 0}</strong>
+                </div>
+            `).join('');
+        }
+
+        function renderRecentUsers(users) {
+            const tbody = document.querySelector('#recentUsersTable tbody');
+            if (!users || users.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: var(--gray);">ユーザーがいません</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = users.map(user => `
+                <tr>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 32px; height: 32px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 500;">
+                                ${(user.name || user.email).charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                                <div style="font-weight: 500;">${user.name || '-'}</div>
+                                <div style="font-size: 0.75rem; color: var(--gray);">${user.email}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="badge badge-${user.plan}">${user.plan}</span></td>
+                    <td>${formatDate(user.created_at)}</td>
+                </tr>
+            `).join('');
+        }
+
+        function renderAllUsers(users) {
+            const tbody = document.querySelector('#allUsersTable tbody');
+            if (!users || users.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--gray);">ユーザーがいません</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = users.map(user => `
+                <tr>
+                    <td style="font-family: monospace; font-size: 0.75rem;">${user.id.substring(0, 8)}...</td>
+                    <td>${user.email}</td>
+                    <td>${user.name || '-'}</td>
+                    <td><span class="badge badge-${user.plan}">${user.plan}</span></td>
+                    <td>${formatDate(user.created_at)}</td>
+                </tr>
+            `).join('');
+        }
+
+        function renderRevenueTable(byPlan) {
+            const tbody = document.querySelector('#revenueTable tbody');
+            const plans = ['free', 'personal', 'pro', 'team'];
+
+            tbody.innerHTML = plans.map(plan => {
+                const data = byPlan[plan] || { users: 0, price_per_user: 0, revenue: 0 };
+                return `
+                    <tr>
+                        <td><span class="badge badge-${plan}">${plan.charAt(0).toUpperCase() + plan.slice(1)}</span></td>
+                        <td>${data.users}</td>
+                        <td>¥${data.price_per_user.toLocaleString()}</td>
+                        <td><strong>¥${data.revenue.toLocaleString()}</strong></td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderBetaEmails(emails) {
+            const list = document.getElementById('betaEmailList');
+            if (!emails || emails.length === 0) {
+                list.innerHTML = '<li style="color: var(--gray); text-align: center;">登録者がいません</li>';
+                return;
+            }
+
+            list.innerHTML = emails.map(email => `
+                <li>
+                    <div class="email-icon">📧</div>
+                    <span>${email}</span>
+                </li>
+            `).join('');
+        }
+
+        function renderHealthStatus(data) {
+            const grid = document.getElementById('healthGrid');
+            const checks = data.checks;
+
+            const items = Object.entries(checks)
+                .filter(([key, value]) => typeof value === 'object' && value.status)
+                .map(([key, value]) => `
+                    <div class="health-item">
+                        <span>${key}</span>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span>${value.message || value.status}</span>
+                            <div class="status-dot ${value.status}"></div>
+                        </div>
+                    </div>
+                `);
+
+            grid.innerHTML = items.length > 0 ? items.join('') :
+                '<p style="color: var(--gray); text-align: center;">ステータス情報がありません</p>';
+
+            // System info
+            const systemInfo = document.getElementById('systemInfo');
+            systemInfo.innerHTML = `
+                <div class="health-grid">
+                    <div class="health-item">
+                        <span>Python バージョン</span>
+                        <span>${checks.python_version || '-'}</span>
+                    </div>
+                    <div class="health-item">
+                        <span>FastAPI</span>
+                        <span>${checks.fastapi_available ? '✅ 有効' : '❌ 無効'}</span>
+                    </div>
+                    <div class="health-item">
+                        <span>JWT</span>
+                        <span>${checks.jwt_available ? '✅ 有効' : '❌ 無効'}</span>
+                    </div>
+                    <div class="health-item">
+                        <span>全体ステータス</span>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span>${data.status}</span>
+                            <div class="status-dot ${data.status}"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Utilities
+        function formatDate(dateStr) {
+            try {
+                const date = new Date(dateStr);
+                return date.toLocaleDateString('ja-JP', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
+            } catch {
+                return dateStr;
+            }
+        }
+    </script>
+</body>
+</html>
