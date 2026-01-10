@@ -1,10 +1,10 @@
 ﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿# TaskMasterAI - ステータス
 
-最終更新: 2026-01-10 (セッション16)
+最終更新: 2026-01-10 (セッション17)
 
 ## 現在の状態
 - 状態: Phase 2 収益化基盤構築完了、本番運用準備完了
-- 進捗: 全機能実装済み、テストカバレッジ90%達成
+- 進捗: 全機能実装済み、テストカバレッジ92%達成
 - ドキュメント: 全API設定ガイド完備、CLIリファレンス・APIドキュメント・README充実
 
 ## 収益化進捗
@@ -64,14 +64,16 @@
   - OpenAPI詳細設定（タグ・サマリー・説明）
 
 ## テスト状況
-- 総テスト数: 754件（753パス、1スキップ）
-- カバレッジ: 90%（前回89%）
+- 総テスト数: 846件（845パス、1スキップ）
+- カバレッジ: 92%（前回90%）
 - 主要モジュール改善:
-  - errors.py: 83% → 94% (+11%)
-  - api.py: 84% → 88% (+4%)
+  - coordinator.py: 88% → 97% (+9%)
+  - database.py: 86% → 92% (+6%)
+  - logging_config.py: 88% → 94% (+6%)
+  - errors.py: 94%（維持）
+  - api.py: 88%（維持）
   - auth.py: 94%（維持）
   - billing.py: 96%（維持）
-  - llm.py: 90%（維持）
 
 ## 次のアクション
 1. **優先度1（ブロッカー）**: 外部API認証情報取得
@@ -90,6 +92,28 @@
 - **外部API認証情報が未取得**: 実環境統合テストおよびデプロイにはGoogle/Stripe/LLMのAPIキーが必要
 
 ## 最近の変更
+- 2026-01-10 (セッション17): coordinator/database/logging_configカバレッジ向上、92%達成
+  - tests/test_database_extended.py: 新規 - database.pyカバレッジ向上テスト30件追加
+    - _str_to_datetimeエッジケーステスト
+    - Database.close()テスト
+    - create_subscription IntegrityErrorテスト
+    - update_subscription period_end/空更新テスト
+    - ユーザーライフサイクル統合テスト
+  - tests/test_coordinator_extended.py: 新規 - coordinator.pyカバレッジ向上テスト35件追加
+    - duration パースエラー時warningテスト
+    - _handle_confirm アクション実行・例外テスト
+    - _log_action 監査ログ例外処理テスト
+    - スケジュールコマンドパーシングテスト
+  - tests/test_logging_config_extended.py: 新規 - logging_config.pyカバレッジ向上テスト27件追加
+    - StructuredLogRecord additionalフィールドテスト
+    - TaskMasterLogger.criticalテスト
+    - production環境JSONFormatterテスト
+    - file_outputハンドラー設定テスト
+  - 全体カバレッジ: 90% → 92% (+2%)
+  - coordinator.py: 88% → 97% (+9%)
+  - database.py: 86% → 92% (+6%)
+  - logging_config.py: 88% → 94% (+6%)
+  - テスト数: 754 → 846 (+92件)
 - 2026-01-10 (セッション16): errors.py/api.pyカバレッジ向上、90%達成
   - tests/test_errors_extended.py: 新規 - errors.pyカバレッジ向上テスト67件追加
     - handle_errors reraise分岐テスト
