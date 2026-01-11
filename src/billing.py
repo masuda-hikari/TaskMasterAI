@@ -555,6 +555,129 @@ class BillingService:
             "period_end": usage.period_end.isoformat() if usage.period_end else None
         }
 
+    def get_savings_report(self, user_id: str) -> dict:
+        """
+        節約時間・ROIレポートを取得
+
+        ユーザーの使用量に基づいて節約時間と金額換算を計算し、
+        有料プランへのアップグレード価値を可視化します。
+
+        Args:
+            user_id: ユーザーID
+
+        Returns:
+            節約時間レポート辞書
+        """
+        subscription = self._subscriptions.get(user_id)
+        if not subscription:
+            return {"error": "サブスクリプションが見つかりません"}
+
+        usage = subscription.usage
+
+        # 機能ごとの推定節約時間（分）
+        SAVINGS_PER_EMAIL_SUMMARY = 3  # 1通のメール要約で3分節約
+        SAVINGS_PER_SCHEDULE_PROPOSAL = 10  # 1回のスケジュール提案で10分節約
+        SAVINGS_PER_ACTION = 15  # 1回のアクション実行で15分節約
+
+        # 計算
+        email_savings_minutes = usage.email_summaries_used * SAVINGS_PER_EMAIL_SUMMARY
+        schedule_savings_minutes = usage.schedule_proposals_used * SAVINGS_PER_SCHEDULE_PROPOSAL
+        action_savings_minutes = usage.actions_executed * SAVINGS_PER_ACTION
+
+        total_minutes = email_savings_minutes + schedule_savings_minutes + action_savings_minutes
+        total_hours = total_minutes / 60
+
+        # 金額換算（時給5000円として計算）
+        HOURLY_RATE_JPY = 5000
+        savings_value_jpy = int(total_hours * HOURLY_RATE_JPY)
+
+        # プラン料金（月額）
+        plan_prices_jpy = {
+            SubscriptionPlan.FREE: 0,
+            SubscriptionPlan.PERSONAL: 1480,
+            SubscriptionPlan.PRO: 3980,
+            SubscriptionPlan.TEAM: 2480,
+            SubscriptionPlan.ENTERPRISE: 50000  # 概算
+        }
+
+        plan_price = plan_prices_jpy.get(subscription.plan, 0)
+        net_savings_jpy = savings_value_jpy - plan_price
+        roi_percent = (savings_value_jpy / plan_price * 100) if plan_price > 0 else float('inf')
+
+        # アップグレード推奨判定
+        limits = subscription.get_limits()
+        usage_percent_email = (
+            usage.email_summaries_used / limits.email_summaries_per_month * 100
+            if limits.email_summaries_per_month > 0 else 0
+        )
+        usage_percent_schedule = (
+            usage.schedule_proposals_used / limits.schedule_proposals_per_month * 100
+            if limits.schedule_proposals_per_month > 0 else 0
+        )
+
+        upgrade_recommended = usage_percent_email > 80 or usage_percent_schedule > 80
+
+        # 次のプラン推奨
+        next_plan_recommendation = None
+        if subscription.plan == SubscriptionPlan.FREE and upgrade_recommended:
+            next_plan_recommendation = {
+                "plan": "personal",
+                "price_jpy": 1480,
+                "additional_benefits": [
+                    "月500通のメール要約（現在の10倍）",
+                    "月100回のスケジュール提案（現在の10倍）",
+                    "アクション自動実行機能"
+                ]
+            }
+        elif subscription.plan == SubscriptionPlan.PERSONAL and upgrade_recommended:
+            next_plan_recommendation = {
+                "plan": "pro",
+                "price_jpy": 3980,
+                "additional_benefits": [
+                    "月2000通のメール要約（現在の4倍）",
+                    "月500回のスケジュール提案（現在の5倍）",
+                    "優先サポート"
+                ]
+            }
+
+        return {
+            "usage_breakdown": {
+                "email_summaries": {
+                    "count": usage.email_summaries_used,
+                    "savings_minutes": email_savings_minutes
+                },
+                "schedule_proposals": {
+                    "count": usage.schedule_proposals_used,
+                    "savings_minutes": schedule_savings_minutes
+                },
+                "actions_executed": {
+                    "count": usage.actions_executed,
+                    "savings_minutes": action_savings_minutes
+                }
+            },
+            "total_savings": {
+                "minutes": total_minutes,
+                "hours": round(total_hours, 1),
+                "value_jpy": savings_value_jpy,
+                "calculation_rate_jpy_per_hour": HOURLY_RATE_JPY
+            },
+            "plan_cost": {
+                "plan": subscription.plan.value,
+                "monthly_price_jpy": plan_price
+            },
+            "net_savings": {
+                "value_jpy": net_savings_jpy,
+                "roi_percent": round(roi_percent, 1) if roi_percent != float('inf') else "unlimited"
+            },
+            "usage_status": {
+                "email_usage_percent": round(usage_percent_email, 1),
+                "schedule_usage_percent": round(usage_percent_schedule, 1),
+                "upgrade_recommended": upgrade_recommended
+            },
+            "upgrade_recommendation": next_plan_recommendation,
+            "generated_at": datetime.now().isoformat()
+        }
+
 
 # モッククライアント（テスト用）
 class MockBillingService(BillingService):

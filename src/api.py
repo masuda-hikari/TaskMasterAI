@@ -1014,6 +1014,30 @@ TaskMasterAI APIは、メール管理、カレンダー管理、タスク自動�
             actions_executed=summary.get("actions_executed", 0)
         )
 
+    # 節約時間レポートエンドポイント
+    @app.get("/usage/report", tags=["使用量"],
+             summary="節約時間・ROIレポートを取得",
+             description="使用状況に基づく節約時間と金額換算、ROI計算を返します。アップグレード推奨情報も含まれます。")
+    async def get_savings_report(current_user: User = Depends(get_current_user)):
+        """節約時間・ROIレポート"""
+        # サブスクリプションがない場合は作成
+        if not billing_service.get_subscription(current_user.id):
+            billing_service.create_subscription(
+                user_id=current_user.id,
+                customer_id=f"local_{current_user.id}",
+                plan=SubscriptionPlan.FREE
+            )
+
+        report = billing_service.get_savings_report(current_user.id)
+
+        if "error" in report:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=report["error"]
+            )
+
+        return report
+
     # ベータ登録エンドポイント（DB永続化）
     @app.post("/beta/signup", response_model=BetaSignupResponse, tags=["ベータ登録"],
               summary="ベータテスターとして登録",
