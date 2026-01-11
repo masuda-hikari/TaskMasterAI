@@ -1,6 +1,6 @@
 ﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿# TaskMasterAI - ステータス
 
-最終更新: 2026-01-11 (セッション27)
+最終更新: 2026-01-11 (セッション28)
 
 ## 現在の状態
 - 状態: Phase 2 収益化基盤構築完了、本番運用準備完了
@@ -9,6 +9,7 @@
 - UI/UX: 管理ダッシュボードUI追加、ランディングページSEO最適化・コンバージョン強化完了
 - データ永続化: ベータ登録DB永続化実装完了
 - デモモード: API認証情報なしでも機能体験可能
+- PWA対応: オフライン対応、アプリインストール可能（NEW - セッション28）
 
 ## 収益化進捗
 - 現在の収益: ¥0
@@ -52,13 +53,19 @@
   - ベータ登録メール一覧
   - システム状態モニタリング
   - 完全レスポンシブ対応
-- [x] **ランディングページ強化**（NEW - セッション27）
+- [x] **ランディングページ強化**（セッション27-28）
   - SEO最適化（メタタグ、OGP、構造化データ）
   - フローティングCTAバー（コンバージョン向上）
   - ベータ登録カウンター（ソーシャルプルーフ）
   - デモ動画セクション
   - 社会的証明（ユーザーの声）セクション
   - 完全モバイルレスポンシブ対応
+- [x] **PWA対応**（NEW - セッション28）
+  - manifest.json: アプリメタデータ・アイコン設定
+  - Service Worker: オフラインキャッシュ戦略
+  - offline.html: オフラインフォールバックページ
+  - アイコン・OG画像SVG生成
+  - Apple/Microsoft PWA対応メタタグ
 - [x] **ベータローンチ準備**（NEW - セッション27）
   - templates/email/beta_welcome.html: ウェルカムメールテンプレート
   - templates/email/beta_launch_announcement.html: ローンチ告知テンプレート
@@ -123,6 +130,22 @@
 - **外部API認証情報が未取得**: 実環境統合テストおよびデプロイにはGoogle/Stripe/LLMのAPIキーが必要
 
 ## 最近の変更
+- 2026-01-11 (セッション28): PWA対応・モバイル体験強化
+  - landing/manifest.json: PWAマニフェスト新規作成
+    - アプリ名・説明・カテゴリ設定
+    - アイコンサイズ設定（72-512px）
+    - ショートカット設定（メール要約・スケジュール確認）
+  - landing/sw.js: Service Worker新規作成
+    - Stale-While-Revalidate戦略（静的リソース）
+    - Network First戦略（API）
+    - オフラインフォールバック
+    - プッシュ通知対応（将来拡張用）
+  - landing/offline.html: オフラインページ新規作成
+  - landing/icons/icon.svg: SVGアイコン新規作成
+  - landing/og-image.svg: OGP用画像新規作成
+  - landing/browserconfig.xml: IE/Edge設定新規作成
+  - landing/index.html: PWAメタタグ・Service Worker登録追加
+  - テスト: 全963件パス維持
 - 2026-01-11 (セッション27): マーケティング強化・デモモード追加
   - landing/index.html: SEO最適化
     - メタタグ強化（keywords, author, robots, canonical）
