@@ -6,12 +6,129 @@ SaaS提供のためのWebインターフェース基盤
 
 import logging
 import os
+import time
+from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 from dataclasses import dataclass
 from enum import Enum
 
 logger = logging.getLogger(__name__)
+
+
+# ===== レート制限 =====
+class RateLimiter:
+    """
+    トークンバケットアルゴリズムによるレート制限
+
+    DDoS対策およびAPI濫用防止のためのレート制限機能
+    """
+
+    def __init__(
+        self,
+        requests_per_minute: int = 60,
+        burst_size: int = 10
+    ):
+        """
+        初期化
+
+        Args:
+            requests_per_minute: 1分あたりの許可リクエスト数
+            burst_size: バースト時の許可リクエスト数
+        """
+        self.requests_per_minute = requests_per_minute
+        self.burst_size = burst_size
+        self._tokens: dict[str, float] = {}
+        self._last_update: dict[str, float] = {}
+        self._lock_until: dict[str, float] = {}
+
+    def _refill_tokens(self, key: str) -> None:
+        """トークンを補充"""
+        now = time.time()
+
+        # 初回アクセス時はバーストサイズで初期化
+        if key not in self._tokens or key not in self._last_update:
+            self._tokens[key] = float(self.burst_size)
+            self._last_update[key] = now
+            return
+
+        elapsed = now - self._last_update[key]
+        # 1秒あたりのトークン補充量
+        refill_rate = self.requests_per_minute / 60.0
+        self._tokens[key] = min(
+            self.burst_size,
+            self._tokens[key] + elapsed * refill_rate
+        )
+        self._last_update[key] = now
+
+    def is_allowed(self, key: str) -> tuple[bool, dict]:
+        """
+        リクエストを許可するかチェック
+
+        Args:
+            key: レート制限のキー（IPアドレスやユーザーID）
+
+        Returns:
+            (許可するか, メタデータ辞書)
+        """
+        # ロック中かチェック
+        if key in self._lock_until:
+            if time.time() < self._lock_until[key]:
+                remaining = int(self._lock_until[key] - time.time())
+                return False, {
+                    "retry_after": remaining,
+                    "reason": "too_many_requests",
+                    "locked": True
+                }
+            else:
+                del self._lock_until[key]
+
+        self._refill_tokens(key)
+
+        if self._tokens[key] >= 1.0:
+            self._tokens[key] -= 1.0
+            return True, {
+                "remaining": int(self._tokens[key]),
+                "limit": self.requests_per_minute,
+                "reset_in": int(60 - (time.time() - self._last_update[key]) % 60)
+            }
+        else:
+            # トークン不足時は一時ロック
+            self._lock_until[key] = time.time() + 60
+            return False, {
+                "retry_after": 60,
+                "reason": "rate_limit_exceeded",
+                "limit": self.requests_per_minute
+            }
+
+    def reset(self, key: str) -> None:
+        """特定キーのレート制限をリセット"""
+        if key in self._tokens:
+            del self._tokens[key]
+        if key in self._last_update:
+            del self._last_update[key]
+        if key in self._lock_until:
+            del self._lock_until[key]
+
+    def get_status(self, key: str) -> dict:
+        """レート制限の現在状態を取得"""
+        self._refill_tokens(key)
+        return {
+            "remaining": int(self._tokens[key]),
+            "limit": self.requests_per_minute,
+            "burst_size": self.burst_size,
+            "locked": key in self._lock_until
+        }
+
+
+# グローバルレートリミッターインスタンス
+# エンドポイント別に異なる制限を設定
+rate_limiters = {
+    "default": RateLimiter(requests_per_minute=60, burst_size=10),
+    "auth": RateLimiter(requests_per_minute=10, burst_size=5),  # 認証は厳しく制限
+    "beta": RateLimiter(requests_per_minute=30, burst_size=5),  # ベータ登録も制限
+    "api": RateLimiter(requests_per_minute=100, burst_size=20),  # 認証済みAPIは緩め
+}
 
 # FastAPIのインポート（オプショナル）
 try:
@@ -404,6 +521,79 @@ TaskMasterAI APIは、メール管理、カレンダー管理、タスク自動�
             return response
 
     app.add_middleware(SecurityHeadersMiddleware)
+
+    # レート制限ミドルウェア
+    from starlette.responses import JSONResponse
+
+    class RateLimitMiddleware(BaseHTTPMiddleware):
+        """
+        レート制限ミドルウェア
+
+        エンドポイントごとに異なるレート制限を適用
+        DDoS対策およびAPI濫用防止
+        """
+
+        async def dispatch(self, request: Request, call_next) -> Response:
+            # クライアントIPを取得（プロキシ考慮）
+            client_ip = request.headers.get(
+                "X-Forwarded-For",
+                request.client.host if request.client else "unknown"
+            )
+            if "," in client_ip:
+                client_ip = client_ip.split(",")[0].strip()
+
+            # エンドポイントに応じたレートリミッター選択
+            path = str(request.url.path)
+            if path.startswith("/auth/"):
+                limiter = rate_limiters["auth"]
+                limiter_name = "auth"
+            elif path.startswith("/beta/"):
+                limiter = rate_limiters["beta"]
+                limiter_name = "beta"
+            elif path.startswith("/email/") or path.startswith("/schedule/"):
+                limiter = rate_limiters["api"]
+                limiter_name = "api"
+            else:
+                limiter = rate_limiters["default"]
+                limiter_name = "default"
+
+            # ヘルスチェックはレート制限対象外
+            if path == "/health":
+                return await call_next(request)
+
+            # レート制限チェック
+            allowed, meta = limiter.is_allowed(client_ip)
+
+            if not allowed:
+                logger.warning(f"レート制限超過: {client_ip} ({limiter_name})")
+                return JSONResponse(
+                    status_code=429,
+                    content={
+                        "detail": "リクエストが多すぎます。しばらく待ってから再試行してください。",
+                        "retry_after": meta.get("retry_after", 60),
+                        "limit": meta.get("limit", 60)
+                    },
+                    headers={
+                        "Retry-After": str(meta.get("retry_after", 60)),
+                        "X-RateLimit-Limit": str(meta.get("limit", 60)),
+                        "X-RateLimit-Remaining": "0",
+                        "X-RateLimit-Reset": str(meta.get("retry_after", 60))
+                    }
+                )
+
+            # リクエスト処理
+            response = await call_next(request)
+
+            # レート制限ヘッダーを追加
+            response.headers["X-RateLimit-Limit"] = str(meta.get("limit", 60))
+            response.headers["X-RateLimit-Remaining"] = str(meta.get("remaining", 0))
+            response.headers["X-RateLimit-Reset"] = str(meta.get("reset_in", 60))
+
+            return response
+
+    # レート制限有効化（環境変数で無効化可能）
+    if os.getenv("DISABLE_RATE_LIMIT", "").lower() != "true":
+        app.add_middleware(RateLimitMiddleware)
 
     # サービスの初期化
     auth_service = AuthService()

@@ -7,7 +7,20 @@ Note: 警告フィルターはpytest.iniで設定
 """
 
 import gc
+import os
 import pytest
+
+
+def pytest_configure(config):
+    """
+    pytest設定時に実行される
+
+    テスト環境用の環境変数を設定
+    """
+    # テスト実行時はレート制限を無効化
+    os.environ["DISABLE_RATE_LIMIT"] = "true"
+    # テスト用DBをインメモリに設定
+    os.environ.setdefault("DATABASE_PATH", ":memory:")
 
 
 @pytest.fixture(autouse=True)
