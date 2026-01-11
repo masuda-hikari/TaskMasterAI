@@ -351,6 +351,60 @@ TaskMasterAI APIは、メール管理、カレンダー管理、タスク自動�
         allow_headers=["*"],
     )
 
+    # セキュリティヘッダーミドルウェア
+    from starlette.middleware.base import BaseHTTPMiddleware
+    from starlette.requests import Request
+    from starlette.responses import Response
+
+    class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+        """
+        セキュリティヘッダーを追加するミドルウェア
+
+        OWASP推奨のセキュリティヘッダーを全レスポンスに付与
+        """
+
+        async def dispatch(self, request: Request, call_next) -> Response:
+            response = await call_next(request)
+
+            # XSS対策
+            response.headers["X-Content-Type-Options"] = "nosniff"
+            response.headers["X-XSS-Protection"] = "1; mode=block"
+
+            # クリックジャッキング対策
+            response.headers["X-Frame-Options"] = "DENY"
+
+            # HTTPS強制（本番環境のみ）
+            if os.getenv("ENVIRONMENT", "development") == "production":
+                response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains; preload"
+
+            # Content Security Policy（API向け、厳格）
+            csp = (
+                "default-src 'none'; "
+                "frame-ancestors 'none'; "
+                "base-uri 'self'; "
+                "form-action 'self'"
+            )
+            response.headers["Content-Security-Policy"] = csp
+
+            # Referrer情報制御
+            response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+
+            # Permissions Policy（API向け）
+            response.headers["Permissions-Policy"] = (
+                "accelerometer=(), camera=(), geolocation=(), "
+                "gyroscope=(), magnetometer=(), microphone=(), "
+                "payment=(), usb=()"
+            )
+
+            # キャッシュ制御（認証済みレスポンス向け）
+            if "/auth/" in str(request.url) or "/admin/" in str(request.url):
+                response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, private"
+                response.headers["Pragma"] = "no-cache"
+
+            return response
+
+    app.add_middleware(SecurityHeadersMiddleware)
+
     # サービスの初期化
     auth_service = AuthService()
     billing_service = BillingService()
