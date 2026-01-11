@@ -1037,6 +1037,188 @@
             white-space: nowrap;
             border: 0;
         }
+
+        /* 節約時間計算セクション */
+        .savings-calculator {
+            padding: 100px 0;
+            background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+        }
+
+        .calculator-content {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .calculator-inputs {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            margin-bottom: 40px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        }
+
+        .input-group {
+            margin-bottom: 30px;
+        }
+
+        .input-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .input-group label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 12px;
+            color: var(--dark);
+        }
+
+        .input-group input[type="range"] {
+            width: 100%;
+            height: 8px;
+            -webkit-appearance: none;
+            background: #e5e7eb;
+            border-radius: 4px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .input-group input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 24px;
+            height: 24px;
+            background: var(--primary);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .input-group input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
+        }
+
+        .input-group input[type="range"]::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            background: var(--primary);
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+        }
+
+        .range-value {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 6px 16px;
+            background: var(--primary);
+            color: white;
+            border-radius: 20px;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .calculator-results {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .result-card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px 20px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .result-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        .result-card.primary {
+            border: 2px solid var(--primary);
+        }
+
+        .result-card.highlight {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .result-card.highlight .result-label {
+            color: rgba(255,255,255,0.9);
+        }
+
+        .result-icon {
+            font-size: 2rem;
+            margin-bottom: 12px;
+        }
+
+        .result-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 8px;
+        }
+
+        .result-card.highlight .result-value {
+            color: white;
+        }
+
+        .result-label {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        .calculator-cta {
+            text-align: center;
+        }
+
+        .savings-summary {
+            font-size: 1.1rem;
+            color: var(--dark);
+            margin-bottom: 24px;
+        }
+
+        .savings-summary strong {
+            color: var(--secondary);
+            font-size: 1.3rem;
+        }
+
+        @media (max-width: 768px) {
+            .calculator-inputs {
+                padding: 24px;
+            }
+
+            .calculator-results {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+
+            .result-card {
+                padding: 24px 16px;
+            }
+
+            .result-value {
+                font-size: 2rem;
+            }
+
+            .savings-calculator {
+                padding: 60px 0;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .result-value {
+                font-size: 1.75rem;
+            }
+
+            .result-icon {
+                font-size: 1.5rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1223,6 +1405,58 @@
                 <div class="roi-stat">
                     <span class="number">100%</span>
                     <span class="label">操作の透明性</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 節約時間計算セクション -->
+    <section class="savings-calculator" id="calculator" aria-labelledby="calculator-heading">
+        <div class="container">
+            <div class="section-title">
+                <h2 id="calculator-heading">あなたの節約時間を計算</h2>
+                <p>日々の作業量を入力して、TaskMasterAIがどれだけ時間を節約できるか確認しましょう</p>
+            </div>
+            <div class="calculator-content">
+                <div class="calculator-inputs">
+                    <div class="input-group">
+                        <label for="emailCount">1日の処理メール数</label>
+                        <input type="range" id="emailCount" min="0" max="100" value="30" aria-describedby="emailCountValue">
+                        <span class="range-value" id="emailCountValue">30通</span>
+                    </div>
+                    <div class="input-group">
+                        <label for="meetingCount">週の会議調整回数</label>
+                        <input type="range" id="meetingCount" min="0" max="20" value="5" aria-describedby="meetingCountValue">
+                        <span class="range-value" id="meetingCountValue">5回</span>
+                    </div>
+                    <div class="input-group">
+                        <label for="hourlyRate">あなたの時給（円）</label>
+                        <input type="range" id="hourlyRate" min="1000" max="20000" value="5000" step="500" aria-describedby="hourlyRateValue">
+                        <span class="range-value" id="hourlyRateValue">¥5,000</span>
+                    </div>
+                </div>
+                <div class="calculator-results">
+                    <div class="result-card primary">
+                        <div class="result-icon">⏱️</div>
+                        <div class="result-value" id="savedTimeWeek">0</div>
+                        <div class="result-label">週あたり節約時間</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-icon">💰</div>
+                        <div class="result-value" id="savedMoneyMonth">¥0</div>
+                        <div class="result-label">月あたり節約金額</div>
+                    </div>
+                    <div class="result-card highlight">
+                        <div class="result-icon">📈</div>
+                        <div class="result-value" id="roiMultiple">0x</div>
+                        <div class="result-label">投資対効果（ROI）</div>
+                    </div>
+                </div>
+                <div class="calculator-cta">
+                    <p class="savings-summary" id="savingsSummary">
+                        Personalプラン（¥1,480/月）で<strong>年間約¥0</strong>相当の時間を節約できます
+                    </p>
+                    <a href="#signup" class="cta-btn">無料で始める</a>
                 </div>
             </div>
         </div>
@@ -1531,6 +1765,115 @@
             deferredPrompt = e;
             // インストールボタンを表示する場合はここで処理
             console.log('[PWA] Install prompt available');
+        });
+
+        // 節約時間計算機
+        const savingsCalculator = {
+            // 節約時間の基準値（分）
+            SAVINGS: {
+                EMAIL_PER_MAIL: 3,      // 1通あたり3分節約
+                MEETING_PER_SCHEDULE: 10 // 1回あたり10分節約
+            },
+            // プラン価格（月額、円）
+            PLAN_PRICE: 1480,
+
+            init() {
+                this.emailSlider = document.getElementById('emailCount');
+                this.meetingSlider = document.getElementById('meetingCount');
+                this.hourlySlider = document.getElementById('hourlyRate');
+
+                this.emailValue = document.getElementById('emailCountValue');
+                this.meetingValue = document.getElementById('meetingCountValue');
+                this.hourlyValue = document.getElementById('hourlyRateValue');
+
+                this.savedTimeWeek = document.getElementById('savedTimeWeek');
+                this.savedMoneyMonth = document.getElementById('savedMoneyMonth');
+                this.roiMultiple = document.getElementById('roiMultiple');
+                this.savingsSummary = document.getElementById('savingsSummary');
+
+                if (this.emailSlider && this.meetingSlider && this.hourlySlider) {
+                    this.bindEvents();
+                    this.calculate();
+                }
+            },
+
+            bindEvents() {
+                this.emailSlider.addEventListener('input', () => this.updateAndCalculate());
+                this.meetingSlider.addEventListener('input', () => this.updateAndCalculate());
+                this.hourlySlider.addEventListener('input', () => this.updateAndCalculate());
+            },
+
+            updateAndCalculate() {
+                // スライダー値の表示更新
+                this.emailValue.textContent = `${this.emailSlider.value}通`;
+                this.meetingValue.textContent = `${this.meetingSlider.value}回`;
+                this.hourlyValue.textContent = `¥${parseInt(this.hourlySlider.value).toLocaleString()}`;
+
+                this.calculate();
+            },
+
+            calculate() {
+                const emailCount = parseInt(this.emailSlider.value);
+                const meetingCount = parseInt(this.meetingSlider.value);
+                const hourlyRate = parseInt(this.hourlySlider.value);
+
+                // 週あたりの節約時間（分）
+                // メール: 1日のメール数 × 5日/週 × 節約時間
+                // 会議: 週の会議調整回数 × 節約時間
+                const weeklyEmailMinutes = emailCount * 5 * this.SAVINGS.EMAIL_PER_MAIL;
+                const weeklyMeetingMinutes = meetingCount * this.SAVINGS.MEETING_PER_SCHEDULE;
+                const totalWeeklyMinutes = weeklyEmailMinutes + weeklyMeetingMinutes;
+
+                // 時間と分に変換
+                const hours = Math.floor(totalWeeklyMinutes / 60);
+                const minutes = totalWeeklyMinutes % 60;
+                let timeDisplay;
+                if (hours > 0 && minutes > 0) {
+                    timeDisplay = `${hours}時間${minutes}分`;
+                } else if (hours > 0) {
+                    timeDisplay = `${hours}時間`;
+                } else {
+                    timeDisplay = `${minutes}分`;
+                }
+
+                // 月あたりの節約金額（週4週間として計算）
+                const monthlyMinutes = totalWeeklyMinutes * 4;
+                const monthlyHours = monthlyMinutes / 60;
+                const monthlySavings = Math.round(monthlyHours * hourlyRate);
+
+                // ROI計算（節約金額 ÷ プラン料金）
+                const roi = this.PLAN_PRICE > 0 ? Math.round(monthlySavings / this.PLAN_PRICE) : 0;
+
+                // 年間節約額
+                const yearlySavings = monthlySavings * 12;
+
+                // 表示更新
+                this.savedTimeWeek.textContent = timeDisplay;
+                this.savedMoneyMonth.textContent = `¥${monthlySavings.toLocaleString()}`;
+                this.roiMultiple.textContent = `${roi}x`;
+
+                // サマリー更新
+                this.savingsSummary.innerHTML = `
+                    Personalプラン（¥${this.PLAN_PRICE.toLocaleString()}/月）で<strong>年間約¥${yearlySavings.toLocaleString()}</strong>相当の時間を節約できます
+                `;
+
+                // ROI値に応じてハイライトカードの色を変更
+                const roiCard = this.roiMultiple.closest('.result-card');
+                if (roi >= 10) {
+                    roiCard.style.background = 'var(--secondary)';
+                } else if (roi >= 5) {
+                    roiCard.style.background = '#059669';
+                } else if (roi >= 1) {
+                    roiCard.style.background = '#0891b2';
+                } else {
+                    roiCard.style.background = 'var(--gray)';
+                }
+            }
+        };
+
+        // 計算機の初期化
+        document.addEventListener('DOMContentLoaded', () => {
+            savingsCalculator.init();
         });
     </script>
 </body>
