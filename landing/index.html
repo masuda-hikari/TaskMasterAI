@@ -1219,6 +1219,94 @@
                 font-size: 1.5rem;
             }
         }
+
+        /* FAQ セクション */
+        .faq {
+            padding: 100px 0;
+            background: white;
+        }
+
+        .faq-list {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .faq-item {
+            border-bottom: 1px solid #e5e7eb;
+            margin-bottom: 0;
+        }
+
+        .faq-item:last-child {
+            border-bottom: none;
+        }
+
+        .faq-question {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px 0;
+            cursor: pointer;
+            font-weight: 500;
+            color: var(--dark);
+            font-size: 1.1rem;
+            list-style: none;
+            transition: color 0.3s;
+        }
+
+        .faq-question::-webkit-details-marker {
+            display: none;
+        }
+
+        .faq-question:hover {
+            color: var(--primary);
+        }
+
+        .faq-icon {
+            font-size: 1.5rem;
+            color: var(--primary);
+            transition: transform 0.3s;
+            flex-shrink: 0;
+            margin-left: 16px;
+        }
+
+        .faq-item[open] .faq-icon {
+            transform: rotate(45deg);
+        }
+
+        .faq-answer {
+            padding: 0 0 24px 0;
+            color: var(--gray);
+            line-height: 1.8;
+        }
+
+        .faq-answer p {
+            margin: 0;
+        }
+
+        .faq-answer a {
+            color: var(--primary);
+            text-decoration: underline;
+        }
+
+        .faq-answer a:hover {
+            text-decoration: none;
+        }
+
+        @media (max-width: 768px) {
+            .faq {
+                padding: 60px 0;
+            }
+
+            .faq-question {
+                font-size: 1rem;
+                padding: 20px 0;
+            }
+
+            .faq-question span:first-child {
+                flex: 1;
+                padding-right: 12px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1237,6 +1325,7 @@
                 <a href="#features">機能</a>
                 <a href="#demo">デモ</a>
                 <a href="#pricing">料金</a>
+                <a href="#faq">FAQ</a>
                 <a href="#signup">ベータ登録</a>
             </nav>
         </div>
@@ -1502,6 +1591,72 @@
                     </ul>
                     <a href="#signup" class="cta-btn secondary">プランを選択</a>
                 </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ セクション -->
+    <section class="faq" id="faq" aria-labelledby="faq-heading">
+        <div class="container">
+            <div class="section-title">
+                <h2 id="faq-heading">よくある質問</h2>
+                <p>ご不明な点があればお気軽にお問い合わせください</p>
+            </div>
+            <div class="faq-list">
+                <details class="faq-item">
+                    <summary class="faq-question">
+                        <span>AIが勝手にメールを送信することはありますか？</span>
+                        <span class="faq-icon">+</span>
+                    </summary>
+                    <div class="faq-answer">
+                        <p>いいえ、絶対にありません。TaskMasterAIはデフォルトで「確認モード」が有効になっており、全てのアクション（メール送信、予定作成など）は必ずあなたの承認が必要です。自動実行モードは明示的に有効化しない限り使用できません。</p>
+                    </div>
+                </details>
+                <details class="faq-item">
+                    <summary class="faq-question">
+                        <span>個人情報やメールの内容は安全ですか？</span>
+                        <span class="faq-icon">+</span>
+                    </summary>
+                    <div class="faq-answer">
+                        <p>はい、セキュリティを最優先に設計しています。OAuth認証を使用するため、あなたのパスワードを保存することはありません。データは暗号化され、第三者への販売や共有は一切行いません。詳細は<a href="privacy.html">プライバシーポリシー</a>をご確認ください。</p>
+                    </div>
+                </details>
+                <details class="faq-item">
+                    <summary class="faq-question">
+                        <span>いつでも解約できますか？</span>
+                        <span class="faq-icon">+</span>
+                    </summary>
+                    <div class="faq-answer">
+                        <p>はい、いつでも解約可能です。解約時の違約金や手数料は一切ありません。解約後も当月末まではサービスをご利用いただけます。また、データの完全削除をリクエストすることも可能です。</p>
+                    </div>
+                </details>
+                <details class="faq-item">
+                    <summary class="faq-question">
+                        <span>どのサービスと連携できますか？</span>
+                        <span class="faq-icon">+</span>
+                    </summary>
+                    <div class="faq-answer">
+                        <p>現在、Gmail、Google Calendarと連携できます。今後、Outlook/Microsoft 365、Slack、Trello、Asana、Notionなどとの連携を予定しています。ベータテスターの方のご意見を参考に、優先順位を決定します。</p>
+                    </div>
+                </details>
+                <details class="faq-item">
+                    <summary class="faq-question">
+                        <span>無料プランでも十分使えますか？</span>
+                        <span class="faq-icon">+</span>
+                    </summary>
+                    <div class="faq-answer">
+                        <p>はい、基本的な使い方なら無料プランで十分です。月50件のメール要約と月10件のスケジュール提案が利用可能です。より多くのメールを処理したい場合や自動アクション機能を使いたい場合は、有料プランへのアップグレードをおすすめします。</p>
+                    </div>
+                </details>
+                <details class="faq-item">
+                    <summary class="faq-question">
+                        <span>会社のメールでも使えますか？</span>
+                        <span class="faq-icon">+</span>
+                    </summary>
+                    <div class="faq-answer">
+                        <p>はい、Gmail（Google Workspace含む）であれば会社のメールでもご利用いただけます。IT部門の承認が必要な場合は、セキュリティに関する資料を提供することも可能です。Teamプランでは複数メンバーでの利用も可能です。</p>
+                    </div>
+                </details>
             </div>
         </div>
     </section>
