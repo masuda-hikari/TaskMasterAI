@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskMasterAI ベータ版へようこそ</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+            line-height: 1.6;
+            color: #1f2937;
+            background-color: #f9fafb;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        .email-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            padding: 40px 30px;
+            text-align: center;
+        }
+        .logo {
+            font-size: 28px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 10px;
+        }
+        .tagline {
+            color: rgba(255,255,255,0.9);
+            font-size: 14px;
+        }
+        .content {
+            padding: 40px 30px;
+        }
+        h1 {
+            font-size: 24px;
+            margin: 0 0 20px 0;
+            color: #1f2937;
+        }
+        p {
+            margin: 0 0 16px 0;
+            color: #4b5563;
+        }
+        .cta-button {
+            display: inline-block;
+            background: #2563eb;
+            color: white !important;
+            padding: 14px 32px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 16px;
+            margin: 20px 0;
+        }
+        .features {
+            background: #f9fafb;
+            border-radius: 12px;
+            padding: 24px;
+            margin: 24px 0;
+        }
+        .feature-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+        .feature-item:last-child {
+            margin-bottom: 0;
+        }
+        .feature-icon {
+            font-size: 20px;
+            margin-right: 12px;
+        }
+        .feature-text {
+            flex: 1;
+        }
+        .feature-text strong {
+            display: block;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+        .feature-text span {
+            font-size: 14px;
+            color: #6b7280;
+        }
+        .steps {
+            margin: 24px 0;
+        }
+        .step {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+        .step-number {
+            background: #2563eb;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            margin-right: 14px;
+            flex-shrink: 0;
+        }
+        .step-content {
+            flex: 1;
+        }
+        .step-content strong {
+            display: block;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+        .step-content p {
+            margin: 0;
+            font-size: 14px;
+        }
+        .divider {
+            height: 1px;
+            background: #e5e7eb;
+            margin: 30px 0;
+        }
+        .footer {
+            padding: 30px;
+            background: #f9fafb;
+            text-align: center;
+        }
+        .footer p {
+            font-size: 13px;
+            color: #6b7280;
+            margin: 8px 0;
+        }
+        .footer a {
+            color: #2563eb;
+            text-decoration: none;
+        }
+        .social-links {
+            margin-top: 20px;
+        }
+        .social-links a {
+            display: inline-block;
+            margin: 0 8px;
+            color: #6b7280;
+            font-size: 14px;
+        }
+        .discount-badge {
+            display: inline-block;
+            background: #10b981;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            margin: 16px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="email-card">
+            <div class="header">
+                <div class="logo">TaskMasterAI</div>
+                <div class="tagline">AIがあなたのルーティンワークを自動化</div>
+            </div>
+
+            <div class="content">
+                <h1>{{user_name}}さん、ベータ版へようこそ！</h1>
+
+                <p>TaskMasterAIのベータテストにご参加いただきありがとうございます。</p>
+
+                <p>あなたは<strong>{{beta_number}}番目</strong>のベータテスターです。先行登録特典として、正式リリース時に<strong>永久30%オフ</strong>の特別割引をご用意しています。</p>
+
+                <div class="discount-badge">🎁 永久30%オフ特典付き</div>
+
+                <p style="text-align: center;">
+                    <a href="{{dashboard_url}}" class="cta-button">ダッシュボードにアクセス</a>
+                </p>
+
+                <div class="features">
+                    <div class="feature-item">
+                        <span class="feature-icon">📧</span>
+                        <div class="feature-text">
+                            <strong>スマートメール管理</strong>
+                            <span>未読メールの自動要約、優先度付け、返信ドラフト作成</span>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">📅</span>
+                        <div class="feature-text">
+                            <strong>インテリジェントスケジューリング</strong>
+                            <span>空き時間の自動検索、会議提案、ダブルブッキング防止</span>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">🔒</span>
+                        <div class="feature-text">
+                            <strong>安全性第一</strong>
+                            <span>全アクションは承認制、透明な監査ログ</span>
+                        </div>
+                    </div>
+                </div>
+
+                <h2 style="font-size: 18px; margin: 30px 0 16px 0;">始め方</h2>
+
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <strong>アカウント連携</strong>
+                            <p>Gmail、Google Calendarを安全に連携します</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <strong>初回設定</strong>
+                            <p>優先度ルールやスケジュール設定をカスタマイズ</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <strong>AIに指示</strong>
+                            <p>「今日の重要メールをまとめて」など自然言語で指示</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <p><strong>フィードバックをお待ちしています</strong></p>
+                <p>ベータ版は皆様のフィードバックをもとに改善していきます。バグ報告や機能リクエストは、ダッシュボードのフィードバックボタンからお送りください。</p>
+
+                <p style="margin-top: 24px;">
+                    ご不明な点がございましたら、いつでもお問い合わせください。<br>
+                    <a href="mailto:support@taskmaster.ai">support@taskmaster.ai</a>
+                </p>
+            </div>
+
+            <div class="footer">
+                <p>このメールは {{user_email}} 宛に送信されています</p>
+                <p>
+                    <a href="{{unsubscribe_url}}">配信停止</a> |
+                    <a href="https://taskmaster.ai/privacy.html">プライバシーポリシー</a> |
+                    <a href="https://taskmaster.ai/terms.html">利用規約</a>
+                </p>
+                <p>&copy; 2026 TaskMasterAI. All rights reserved.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

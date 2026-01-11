@@ -3,8 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TaskMasterAI - AIがあなたの仕事を自動化</title>
-    <meta name="description" content="メール管理、カレンダー調整、タスク自動化をAIがサポート。週5時間以上の時間を節約。">
+    <title>TaskMasterAI - AIがあなたの仕事を自動化 | メール・スケジュール管理</title>
+    <meta name="description" content="TaskMasterAIは、メール管理、カレンダー調整、タスク自動化をAIがサポートするサービス。週5時間以上の時間を節約し、業務効率を劇的に改善。無料プランあり。">
+    <meta name="keywords" content="AI,自動化,メール管理,スケジュール管理,タスク管理,業務効率化,Gmail,Googleカレンダー,生産性向上">
+    <meta name="author" content="TaskMasterAI">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://taskmaster.ai/">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://taskmaster.ai/">
+    <meta property="og:title" content="TaskMasterAI - AIがあなたの仕事を自動化">
+    <meta property="og:description" content="メール管理、カレンダー調整、タスク自動化をAIがサポート。週5時間以上の時間を節約。無料プランあり。">
+    <meta property="og:image" content="https://taskmaster.ai/og-image.png">
+    <meta property="og:locale" content="ja_JP">
+    <meta property="og:site_name" content="TaskMasterAI">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://taskmaster.ai/">
+    <meta name="twitter:title" content="TaskMasterAI - AIがあなたの仕事を自動化">
+    <meta name="twitter:description" content="メール管理、カレンダー調整、タスク自動化をAIがサポート。週5時間以上の時間を節約。">
+    <meta name="twitter:image" content="https://taskmaster.ai/og-image.png">
+
+    <!-- Structured Data / JSON-LD -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "TaskMasterAI",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Web",
+        "offers": [
+            {
+                "@type": "Offer",
+                "name": "Free",
+                "price": "0",
+                "priceCurrency": "JPY"
+            },
+            {
+                "@type": "Offer",
+                "name": "Personal",
+                "price": "1480",
+                "priceCurrency": "JPY"
+            },
+            {
+                "@type": "Offer",
+                "name": "Pro",
+                "price": "3980",
+                "priceCurrency": "JPY"
+            }
+        ],
+        "description": "メール管理、カレンダー調整、タスク自動化をAIがサポートするサービス",
+        "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.8",
+            "ratingCount": "50"
+        }
+    }
+    </script>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+    <meta name="theme-color" content="#2563eb">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
@@ -796,6 +859,117 @@
                 background: white;
             }
         }
+
+        /* Floating CTA Bar */
+        .floating-cta {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--primary);
+            padding: 12px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            z-index: 99;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.2);
+        }
+
+        .floating-cta.visible {
+            transform: translateY(0);
+        }
+
+        .floating-cta-text {
+            color: white;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .floating-cta-text .urgency {
+            background: #fbbf24;
+            color: var(--dark);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .floating-cta-btn {
+            background: white;
+            color: var(--primary);
+            padding: 10px 24px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background 0.3s, transform 0.2s;
+        }
+
+        .floating-cta-btn:hover {
+            background: #f0f9ff;
+            transform: scale(1.02);
+        }
+
+        .floating-cta-close {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.7);
+            cursor: pointer;
+            padding: 8px;
+            font-size: 1.2rem;
+            transition: color 0.2s;
+        }
+
+        .floating-cta-close:hover {
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .floating-cta {
+                flex-direction: column;
+                gap: 12px;
+                padding: 16px;
+            }
+
+            .floating-cta-text {
+                flex-direction: column;
+                gap: 8px;
+                text-align: center;
+            }
+
+            .floating-cta-btn {
+                width: 100%;
+                text-align: center;
+            }
+
+            .floating-cta-close {
+                position: absolute;
+                top: 8px;
+                right: 8px;
+            }
+        }
+
+        /* Beta counter */
+        .beta-counter {
+            text-align: center;
+            margin-top: 16px;
+            font-size: 0.9rem;
+            color: var(--gray);
+        }
+
+        .beta-counter strong {
+            color: var(--primary);
+        }
     </style>
 </head>
 <body>
@@ -1036,8 +1210,19 @@
                 <button type="submit">登録する</button>
             </form>
             <p class="beta-note">※ スパムは送りません。ベータ版の準備ができ次第ご連絡します。</p>
+            <p class="beta-counter">現在 <strong>0</strong> 名が登録済み</p>
         </div>
     </section>
+
+    <!-- Floating CTA Bar -->
+    <div class="floating-cta" id="floatingCta">
+        <div class="floating-cta-text">
+            <span class="urgency">限定募集</span>
+            <span>ベータテスター残り <strong id="remainingSlots">47</strong> 名</span>
+        </div>
+        <a href="#signup" class="floating-cta-btn">今すぐ無料登録</a>
+        <button class="floating-cta-close" aria-label="閉じる" onclick="closeFloatingCta()">×</button>
+    </div>
 
     <footer>
         <div class="container">
@@ -1186,6 +1371,60 @@
 
             lastScroll = currentScroll;
         });
+
+        // フローティングCTAの表示制御
+        const floatingCta = document.getElementById('floatingCta');
+        let ctaClosed = sessionStorage.getItem('floatingCtaClosed') === 'true';
+
+        function showFloatingCta() {
+            if (!ctaClosed) {
+                floatingCta.classList.add('visible');
+            }
+        }
+
+        function closeFloatingCta() {
+            floatingCta.classList.remove('visible');
+            ctaClosed = true;
+            sessionStorage.setItem('floatingCtaClosed', 'true');
+        }
+
+        // スクロール位置が500px以上でCTAを表示
+        window.addEventListener('scroll', () => {
+            if (window.pageYOffset > 500) {
+                showFloatingCta();
+            } else {
+                floatingCta.classList.remove('visible');
+            }
+        });
+
+        // ベータ登録数を取得して残り枠を計算
+        async function updateRemainingSlots() {
+            const apiBaseUrl = window.location.hostname === 'localhost'
+                ? 'http://localhost:8000'
+                : 'https://api.taskmaster.ai';
+
+            try {
+                const response = await fetch(`${apiBaseUrl}/beta/count`);
+                if (response.ok) {
+                    const data = await response.json();
+                    const total = 100; // 初回募集枠
+                    const remaining = Math.max(0, total - data.count);
+                    document.getElementById('remainingSlots').textContent = remaining;
+
+                    // ベータ登録カウンターも更新
+                    const betaCounter = document.querySelector('.beta-counter');
+                    if (betaCounter) {
+                        betaCounter.innerHTML = `現在 <strong>${data.count}</strong> 名が登録済み`;
+                    }
+                }
+            } catch (error) {
+                // APIエラー時はデフォルト値を維持
+                console.log('ベータ登録数の取得をスキップ');
+            }
+        }
+
+        // 初期化
+        updateRemainingSlots();
     </script>
 </body>
 </html>

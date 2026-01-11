@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskMasterAI ベータ版スタート！</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+            line-height: 1.6;
+            color: #1f2937;
+            background-color: #f9fafb;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        .email-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            padding: 50px 30px;
+            text-align: center;
+        }
+        .logo {
+            font-size: 28px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 16px;
+        }
+        .announcement-badge {
+            display: inline-block;
+            background: #fbbf24;
+            color: #1f2937;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+        .header h1 {
+            color: white;
+            font-size: 28px;
+            margin: 0;
+        }
+        .content {
+            padding: 40px 30px;
+        }
+        p {
+            margin: 0 0 16px 0;
+            color: #4b5563;
+        }
+        .highlight-box {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border-radius: 12px;
+            padding: 24px;
+            margin: 24px 0;
+            text-align: center;
+        }
+        .highlight-box h2 {
+            color: #2563eb;
+            font-size: 20px;
+            margin: 0 0 8px 0;
+        }
+        .highlight-box p {
+            color: #6b7280;
+            margin: 0;
+        }
+        .cta-button {
+            display: inline-block;
+            background: #2563eb;
+            color: white !important;
+            padding: 16px 40px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 16px;
+            margin: 24px 0;
+        }
+        .cta-button:hover {
+            background: #1d4ed8;
+        }
+        .discount-section {
+            background: #10b981;
+            color: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin: 24px 0;
+            text-align: center;
+        }
+        .discount-section h3 {
+            margin: 0 0 8px 0;
+            font-size: 18px;
+        }
+        .discount-section .discount-value {
+            font-size: 36px;
+            font-weight: 700;
+            margin: 8px 0;
+        }
+        .discount-section p {
+            color: rgba(255,255,255,0.9);
+            margin: 0;
+            font-size: 14px;
+        }
+        .countdown {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin: 20px 0;
+        }
+        .countdown-item {
+            text-align: center;
+        }
+        .countdown-item .number {
+            background: white;
+            color: #2563eb;
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .countdown-item .label {
+            font-size: 12px;
+            color: rgba(255,255,255,0.8);
+        }
+        .features-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin: 24px 0;
+        }
+        .feature-item {
+            background: #f9fafb;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+        }
+        .feature-item .icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        .feature-item strong {
+            display: block;
+            color: #1f2937;
+            font-size: 14px;
+        }
+        .divider {
+            height: 1px;
+            background: #e5e7eb;
+            margin: 30px 0;
+        }
+        .footer {
+            padding: 30px;
+            background: #f9fafb;
+            text-align: center;
+        }
+        .footer p {
+            font-size: 13px;
+            color: #6b7280;
+            margin: 8px 0;
+        }
+        .footer a {
+            color: #2563eb;
+            text-decoration: none;
+        }
+        @media (max-width: 480px) {
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            .countdown {
+                gap: 8px;
+            }
+            .countdown-item .number {
+                width: 40px;
+                height: 40px;
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="email-card">
+            <div class="header">
+                <div class="logo">TaskMasterAI</div>
+                <div class="announcement-badge">🎉 お待たせしました！</div>
+                <h1>ベータ版がスタートしました！</h1>
+            </div>
+
+            <div class="content">
+                <p>{{user_name}}さん、こんにちは！</p>
+
+                <p>ベータ登録いただいた皆様へ、お待たせしました。<strong>TaskMasterAIのベータ版がついにスタート</strong>しました！</p>
+
+                <div class="highlight-box">
+                    <h2>今すぐ利用開始できます</h2>
+                    <p>ダッシュボードにアクセスして、AIアシスタントを体験しましょう</p>
+                </div>
+
+                <p style="text-align: center;">
+                    <a href="{{dashboard_url}}" class="cta-button">ダッシュボードにアクセス</a>
+                </p>
+
+                <div class="discount-section">
+                    <h3>🎁 ベータテスター限定特典</h3>
+                    <div class="discount-value">永久30%オフ</div>
+                    <p>正式リリース後も、ベータテスター様は特別価格でご利用いただけます</p>
+                    <div class="countdown">
+                        <div class="countdown-item">
+                            <div class="number">72</div>
+                            <div class="label">時間</div>
+                        </div>
+                        <div class="countdown-item">
+                            <div class="number">00</div>
+                            <div class="label">分</div>
+                        </div>
+                        <div class="countdown-item">
+                            <div class="number">00</div>
+                            <div class="label">秒</div>
+                        </div>
+                    </div>
+                    <p style="margin-top: 12px;">早期アップグレードでさらに10%追加割引</p>
+                </div>
+
+                <h2 style="font-size: 18px; margin: 30px 0 16px 0;">ベータ版で利用可能な機能</h2>
+
+                <div class="features-grid">
+                    <div class="feature-item">
+                        <div class="icon">📧</div>
+                        <strong>メール要約</strong>
+                    </div>
+                    <div class="feature-item">
+                        <div class="icon">✍️</div>
+                        <strong>返信ドラフト</strong>
+                    </div>
+                    <div class="feature-item">
+                        <div class="icon">📅</div>
+                        <strong>スケジュール提案</strong>
+                    </div>
+                    <div class="feature-item">
+                        <div class="icon">🔍</div>
+                        <strong>空き時間検索</strong>
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <p><strong>フィードバックをお待ちしています</strong></p>
+                <p>ベータ期間中は、皆様のフィードバックを元に機能改善を行います。使いづらい点やほしい機能があれば、お気軽にお知らせください。</p>
+
+                <p style="margin-top: 24px;">
+                    ご不明な点は <a href="mailto:support@taskmaster.ai">support@taskmaster.ai</a> までお問い合わせください。
+                </p>
+            </div>
+
+            <div class="footer">
+                <p>このメールは {{user_email}} 宛に送信されています</p>
+                <p>
+                    <a href="{{unsubscribe_url}}">配信停止</a> |
+                    <a href="https://taskmaster.ai/privacy.html">プライバシーポリシー</a> |
+                    <a href="https://taskmaster.ai/terms.html">利用規約</a>
+                </p>
+                <p>&copy; 2026 TaskMasterAI. All rights reserved.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

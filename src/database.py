@@ -90,7 +90,8 @@ class Database:
         # インメモリDBの場合は接続を保持（閉じるとデータが消える）
         self._persistent_conn: Optional[sqlite3.Connection] = None
         if self.db_path == ":memory:":
-            self._persistent_conn = sqlite3.connect(":memory:")
+            # check_same_thread=False: FastAPIの非同期処理でスレッド間共有を許可
+            self._persistent_conn = sqlite3.connect(":memory:", check_same_thread=False)
             self._persistent_conn.row_factory = sqlite3.Row
         self._init_database()
         logger.info(f"データベース初期化完了: {self.db_path}")

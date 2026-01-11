@@ -1,13 +1,14 @@
 ﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿# TaskMasterAI - ステータス
 
-最終更新: 2026-01-11 (セッション26)
+最終更新: 2026-01-11 (セッション27)
 
 ## 現在の状態
 - 状態: Phase 2 収益化基盤構築完了、本番運用準備完了
-- 進捗: 全機能実装済み、テスト947件パス
+- 進捗: 全機能実装済み、テスト963件パス
 - ドキュメント: 全API設定ガイド完備、CLIリファレンス・APIドキュメント・README充実
-- UI/UX: 管理ダッシュボードUI追加、ランディングページ日本円表記対応完了
+- UI/UX: 管理ダッシュボードUI追加、ランディングページSEO最適化・コンバージョン強化完了
 - データ永続化: ベータ登録DB永続化実装完了
+- デモモード: API認証情報なしでも機能体験可能
 
 ## 収益化進捗
 - 現在の収益: ¥0
@@ -30,6 +31,11 @@
   - メール要約・スケジュール提案エンドポイント
   - 使用量確認エンドポイント
   - OpenAPI/Swagger詳細設定
+- [x] **デモモードAPI**（NEW - セッション27）
+  - GET /demo/emails: メール要約デモ
+  - GET /demo/schedule: スケジュール提案デモ
+  - GET /demo/features: 機能一覧・料金情報
+  - 認証不要でサービス機能を体験可能
 - [x] **管理ダッシュボードAPI**（セッション22）
   - システム統計（/admin/stats）
   - ユーザー一覧（/admin/users）
@@ -37,7 +43,7 @@
   - ベータ登録一覧（/admin/beta-emails）
   - 詳細ヘルスチェック（/admin/health-detailed）
   - 管理者権限チェック（ADMIN_EMAILS環境変数）
-- [x] **管理ダッシュボードUI**（NEW - セッション23）
+- [x] **管理ダッシュボードUI**（セッション23）
   - landing/admin.html: 管理者専用UIページ
   - ログイン認証・セッション管理
   - 概要ダッシュボード（ユーザー数、収益、ベータ登録数）
@@ -46,21 +52,38 @@
   - ベータ登録メール一覧
   - システム状態モニタリング
   - 完全レスポンシブ対応
-- [x] **ランディングページ**: ベータテスター募集用LP
-- [x] **デプロイ基盤**:
-  - Dockerfile（マルチステージビルド）
-  - docker-compose.yml（ローカル開発用）
-  - railway.json / render.yaml（クラウドデプロイ設定）
+- [x] **ランディングページ強化**（NEW - セッション27）
+  - SEO最適化（メタタグ、OGP、構造化データ）
+  - フローティングCTAバー（コンバージョン向上）
+  - ベータ登録カウンター（ソーシャルプルーフ）
+  - デモ動画セクション
+  - 社会的証明（ユーザーの声）セクション
+  - 完全モバイルレスポンシブ対応
+- [x] **ベータローンチ準備**（NEW - セッション27）
+  - templates/email/beta_welcome.html: ウェルカムメールテンプレート
+  - templates/email/beta_launch_announcement.html: ローンチ告知テンプレート
+- [x] **法務対応ページ**
+  - プライバシーポリシー（privacy.html）
+  - 利用規約（terms.html）
+  - お問い合わせフォーム（contact.html）
+  - FAQ（よくある質問）
 - [x] **Database**: SQLite永続化層
   - ユーザー管理
   - サブスクリプション管理
   - 使用量追跡
   - 監査ログ
-- [x] **E2Eテスト**: 完全なユーザーフローテスト
-- [x] **CLI統合テスト**: コマンドライン機能テスト
-- [x] **Billing+API統合テスト**: 課金とAPIの統合テスト
-- [x] **パフォーマンステスト**: システム性能・スケーラビリティテスト
-- [x] **セキュリティテスト**: 認証・認可・入力検証テスト
+  - ベータ登録永続化
+- [x] **デプロイ基盤**:
+  - Dockerfile（マルチステージビルド）
+  - docker-compose.yml（ローカル開発用）
+  - railway.json / render.yaml（クラウドデプロイ設定）
+- [x] **テスト・品質保証**
+  - E2Eテスト
+  - CLI統合テスト
+  - Billing+API統合テスト
+  - パフォーマンステスト
+  - セキュリティテスト
+  - デモエンドポイントテスト（NEW - セッション27）
 - [x] **CI/CDパイプライン**: GitHub Actions設定
   - テスト自動実行（Python 3.11/3.12）
   - セキュリティスキャン（bandit/safety）
@@ -68,34 +91,13 @@
   - 自動デプロイ（Railway/Render）
   - Dependabot依存関係自動更新
 - [x] **エラーハンドリング**: 統一エラーフレームワーク
-  - カスタム例外クラス（認証/課金/メール/スケジュール/LLM/DB/検証/コマンド）
-  - エラーコード体系（AUTH_1001〜CMD_9003）
-  - 日本語ユーザーメッセージ
-  - エラーデコレータ（handle_errors）
 - [x] **ロギング**: 構造化ロギングシステム
-  - JSON形式ログ出力
-  - リクエストコンテキスト追跡
-  - パフォーマンスタイマー
-  - メトリクス収集
-- [x] **ドキュメント強化**
-  - README.md日本語化・日本円表記統一
-  - OpenAPI詳細設定（タグ・サマリー・説明）
-- [x] **ランディングページ強化**
-  - デモ動画セクション追加
-  - 社会的証明（ユーザーの声）セクション追加
-  - 完全モバイルレスポンシブ対応（ハンバーガーメニュー）
-  - タッチUI最適化・アクセシビリティ対応
-- [x] **法務対応ページ**
-  - プライバシーポリシー（privacy.html）
-  - 利用規約（terms.html）
-  - お問い合わせフォーム（contact.html）
-  - FAQ（よくある質問）
 
 ## テスト状況
-- 総テスト数: 947件（946パス、1スキップ）
+- 総テスト数: 963件（963パス、1スキップ）
 - 主要モジュール:
   - email_bot.py: 98%
-  - api.py: 91%
+  - api.py: 91%+
   - scheduler.py: 95%
   - coordinator.py: 97%
   - database.py: 95%+
@@ -121,183 +123,28 @@
 - **外部API認証情報が未取得**: 実環境統合テストおよびデプロイにはGoogle/Stripe/LLMのAPIキーが必要
 
 ## 最近の変更
+- 2026-01-11 (セッション27): マーケティング強化・デモモード追加
+  - landing/index.html: SEO最適化
+    - メタタグ強化（keywords, author, robots, canonical）
+    - Open Graph / Twitter Card対応
+    - JSON-LD構造化データ（SoftwareApplication）
+    - Favicon追加
+  - landing/index.html: コンバージョン最適化
+    - フローティングCTAバー（スクロール時表示）
+    - ベータ登録カウンター（リアルタイム表示）
+    - 残り枠表示で緊急性演出
+  - src/api.py: デモモードエンドポイント追加
+    - GET /demo/emails: サンプルメール要約
+    - GET /demo/schedule: サンプルスケジュール提案
+    - GET /demo/features: 機能一覧・料金情報
+  - templates/email/: ベータローンチ用メールテンプレート作成
+    - beta_welcome.html: ウェルカムメール
+    - beta_launch_announcement.html: ローンチ告知
+  - src/database.py: インメモリDB接続のスレッドセーフ化
+  - tests/test_demo_endpoints.py: 新規 - デモエンドポイントテスト16件
+  - テスト数: 947 → 963 (+16件)
 - 2026-01-11 (セッション26): セットアップ自動化・ドキュメント強化
-  - docs/SETUP_CHECKLIST.md: 新規 - 認証情報取得チェックリスト
-    - Google Cloud/Stripe/LLM API設定の詳細手順
-    - 環境変数設定ガイド
-    - デプロイ手順
-  - scripts/verify_setup.py: 新規 - 環境検証スクリプト
-    - 必須環境変数の存在確認
-    - 依存関係インストール確認
-    - エラー・警告の分類表示
-  - テスト数: 947件維持（全パス、1スキップ）
 - 2026-01-11 (セッション25): テスト安定化・コード品質改善
-  - tests/test_beta_signup.py: テストデータのユニーク化
-    - UUID使用でテスト間のデータ衝突を解消
-    - 全8テストがDBベースで安定動作するよう修正
-  - テスト数: 947件維持（全パス、1スキップ）
 - 2026-01-11 (セッション24): ベータ登録DB永続化実装
-  - src/database.py: ベータ登録テーブル・関連メソッド追加
-    - beta_signupsテーブル（email, created_at, source, status）
-    - add_beta_signup(): ベータ登録追加（重複チェック付き）
-    - get_beta_signup_count(): 登録者数取得
-    - get_beta_signups(): 登録一覧取得（ページネーション対応）
-    - get_beta_emails(): メールアドレス一覧取得
-    - is_beta_registered(): 登録済み確認
-  - src/api.py: ベータ登録APIをDB永続化版に更新
-    - /beta/signup: DB永続化
-    - /beta/count: DB永続化
-    - /admin/beta-emails: DB永続化
-    - /admin/beta-signups: 新規 - 詳細一覧エンドポイント追加
-  - tests/test_beta_db.py: 新規 - ベータ登録DB永続化テスト17件追加
-  - .claude/REVENUE_METRICS.md: 新規 - 収益メトリクス管理ファイル
-  - テスト数: 930 → 947 (+17件)
 - 2026-01-11 (セッション23): 管理ダッシュボードUIフロントエンド実装
-  - landing/admin.html: 新規 - 管理者専用ダッシュボードUI
-    - JWT認証によるログイン機能
-    - 概要ダッシュボード（統計カード、最近のユーザー、プラン分布）
-    - ユーザー管理画面（一覧表示、プラン確認）
-    - 収益画面（月間収益、プラン別内訳テーブル）
-    - ベータ登録一覧（メールアドレス表示）
-    - システム状態モニタリング（ヘルスチェック、サービス状態）
-    - サイドバーナビゲーション、完全レスポンシブ対応
-  - landing/index.html: フッターに管理者ログインリンク追加
-  - テスト数: 930件維持（全パス）
 - 2026-01-11 (セッション22): 管理ダッシュボードAPI実装、日本円表記統一
-  - src/api.py: 管理ダッシュボードエンドポイント追加（stats/users/revenue/beta-emails/health-detailed）
-  - tests/test_admin_dashboard.py: 新規 - 管理ダッシュボードテスト12件追加
-  - README.md: 料金表記を日本円に統一（$10→¥1,480、$25→¥3,980等）
-  - テスト数: 918 → 930 (+12件)
-- 2026-01-10 (セッション21): カバレッジ大幅向上、94%達成
-  - tests/test_email_bot_extended.py: 新規 - email_bot.pyカバレッジ向上テスト15件追加
-    - authenticate()トークン存在・更新・新規フローテスト
-    - fetch_unread_emails()のEmailError再raiseテスト
-    - summarize_text_offlineエッジケーステスト
-  - tests/test_api_extended2.py: 新規 - api.pyカバレッジ向上テスト16件追加
-    - AuthServiceモックトークン検証テスト
-    - FastAPI未インストール時エラーテスト
-    - メール要約・スケジュール提案成功パステスト
-  - tests/test_llm_extended.py: 新規 - llm.pyカバレッジテスト13件追加
-    - BaseLLMClient抽象メソッドテスト
-    - MockLLMClient動作テスト
-    - LLMResponse構造テスト
-  - 全体カバレッジ: 93% → 94% (+1%)
-  - email_bot.py: 89% → 98% (+9%)
-  - api.py: 89% → 91% (+2%)
-  - テスト数: 874 → 918 (+44件)
-- 2026-01-10 (セッション20): ベータ登録機能・日本円対応
-  - landing/index.html: 価格表記を$から¥（日本円）に変更
-    - Free: ¥0、Personal: ¥1,480/月、Pro: ¥3,980/月
-  - landing/index.html: ベータ登録フォームをAPIに接続
-  - src/api.py: ベータ登録エンドポイント追加
-    - POST /beta/signup: ベータテスター登録
-    - GET /beta/count: 登録者数取得
-  - tests/test_beta_signup.py: 新規 - ベータ登録テスト8件追加
-  - テスト数: 866 → 874 (+8件)
-- 2026-01-10 (セッション19): scheduler.pyカバレッジ向上、93%達成
-  - tests/test_scheduler_extended.py: 新規 - scheduler.pyカバレッジ向上テスト20件追加
-    - authenticate()トークン存在・更新・新規フローテスト
-    - authenticate()一般例外処理テスト（Runtime/Permission/OSError）
-    - get_events()ScheduleError再raiseテスト
-    - find_free_slots()イベント重複チェックテスト
-    - __main__ブロック実行テスト
-    - find_free_slots_offlineエッジケーステスト
-    - MeetingProposalスコアリングテスト
-  - 全体カバレッジ: 92% → 93% (+1%)
-  - scheduler.py: 88% → 95% (+7%)
-  - テスト数: 846 → 866 (+20件)
-- 2026-01-10 (セッション18): ランディングページ・法務対応強化
-  - landing/index.html: デモ動画・ユーザーの声セクション追加、モバイル完全対応
-  - landing/privacy.html: 新規 - プライバシーポリシー
-  - landing/terms.html: 新規 - 利用規約
-  - landing/contact.html: 新規 - お問い合わせフォーム・FAQ
-  - ハンバーガーメニュー・タッチUI最適化・アクセシビリティ対応
-  - 846テストパス維持
-- 2026-01-10 (セッション17): coordinator/database/logging_configカバレッジ向上、92%達成
-  - tests/test_database_extended.py: 新規 - database.pyカバレッジ向上テスト30件追加
-    - _str_to_datetimeエッジケーステスト
-    - Database.close()テスト
-    - create_subscription IntegrityErrorテスト
-    - update_subscription period_end/空更新テスト
-    - ユーザーライフサイクル統合テスト
-  - tests/test_coordinator_extended.py: 新規 - coordinator.pyカバレッジ向上テスト35件追加
-    - duration パースエラー時warningテスト
-    - _handle_confirm アクション実行・例外テスト
-    - _log_action 監査ログ例外処理テスト
-    - スケジュールコマンドパーシングテスト
-  - tests/test_logging_config_extended.py: 新規 - logging_config.pyカバレッジ向上テスト27件追加
-    - StructuredLogRecord additionalフィールドテスト
-    - TaskMasterLogger.criticalテスト
-    - production環境JSONFormatterテスト
-    - file_outputハンドラー設定テスト
-  - 全体カバレッジ: 90% → 92% (+2%)
-  - coordinator.py: 88% → 97% (+9%)
-  - database.py: 86% → 92% (+6%)
-  - logging_config.py: 88% → 94% (+6%)
-  - テスト数: 754 → 846 (+92件)
-- 2026-01-10 (セッション16): errors.py/api.pyカバレッジ向上、90%達成
-  - tests/test_errors_extended.py: 新規 - errors.pyカバレッジ向上テスト67件追加
-    - handle_errors reraise分岐テスト
-    - handle_errors_async全機能テスト
-    - ErrorCollector.log_allテスト
-    - 全ErrorCodeユーザーメッセージテスト
-  - tests/test_api_extended.py: 新規 - api.pyカバレッジ向上テスト39件追加
-    - AuthServiceパスワード・ユーザー管理テスト
-    - JWT認証・トークン検証テスト
-    - FastAPIエンドポイントテスト
-    - 使用量制限・サブスクリプション作成テスト
-  - 全体カバレッジ: 89% → 90% (+1%)
-  - errors.py: 83% → 94% (+11%)
-  - api.py: 84% → 88% (+4%)
-  - テスト数: 649 → 754 (+105件)
-- 2026-01-10 (セッション15): auth.pyカバレッジ大幅向上
-  - tests/test_auth_extended.py: 新規 - auth.pyカバレッジ向上テスト19件追加
-  - tests/test_scheduler_coverage.py: テスト修正（時刻依存テスト）
-  - 全体カバレッジ: 87% → 89% (+2%)
-  - auth.py: 68% → 94% (+26%)
-  - テスト数: 630 → 649 (+19件)
-- 2026-01-09 (セッション14): email_bot/schedulerカバレッジ大幅向上
-  - tests/test_email_bot_coverage.py: EmailBotカバレッジ向上テスト34件追加
-  - tests/test_scheduler_coverage.py: Schedulerカバレッジ向上テスト42件追加
-  - 全体カバレッジ: 81% → 87% (+6%)
-  - email_bot.py: 55% → 89% (+34%)
-  - scheduler.py: 59% → 89% (+30%)
-  - テスト数: 554 → 629 (+75件)
-- 2026-01-09 (セッション13): テストカバレッジ大幅向上
-  - tests/test_auth_coverage.py: auth.pyカバレッジ向上テスト15件追加
-  - tests/test_llm_coverage.py: llm.pyカバレッジ向上テスト34件追加
-  - tests/test_billing_coverage.py: billing.pyカバレッジ向上テスト48件追加
-  - 全体カバレッジ: 74% → 81% (+7%)
-  - billing.py: 69% → 96% (+27%)
-  - llm.py: 56% → 90% (+34%)
-  - auth.py: 52% → 68% (+16%)
-- 2026-01-09 (セッション12): テストカバレッジ向上
-  - tests/test_coverage_improvement.py: カバレッジ向上テスト40件追加
-  - 全体カバレッジ: 67% → 74%
-  - cli.py: 29% → 94%
-  - email_bot.py: 32% → 55%
-  - scheduler.py: 37% → 59%
-- 2026-01-09 (セッション11): sqlite3警告解消・テスト品質向上
-  - src/database.py: Python 3.12+対応 datetime→ISO8601文字列変換
-  - src/database.py: close()メソッド追加
-  - tests/conftest.py: 共通フィクスチャ追加
-  - pytest.ini: 警告フィルター設定
-  - tests/test_database.py: dbフィクスチャ追加
-  - 全416テストパス（警告0）
-- 2026-01-09 (セッション10): OpenAPI設定強化・README日本語化
-  - src/api.py: OpenAPI詳細設定（タグ、サマリー、説明文、連絡先、ライセンス）
-  - README.md: 日本語化、インストール手順・CLI/API使用例・SDK例を充実
-  - 全417テストパス確認
-- 2026-01-08 (セッション9): ドキュメント充実化・エッジケーステスト追加
-  - docs/cli_reference.md: CLIコマンド詳細リファレンス
-  - docs/api.md: REST APIドキュメント（エンドポイント、SDK例）
-  - docs/quickstart.md: クイックスタートガイド
-  - docs/deployment.md: デプロイメントガイド
-  - tests/test_edge_cases.py: エッジケーステスト39件追加
-  - テスト総数: 378 → 417件（+39件）
-- 2026-01-08 (セッション8): 既存モジュールへのエラーハンドリング適用
-- 2026-01-08 (セッション7): エラーハンドリング・ロギング強化
-- 2026-01-08 (セッション6): CI/CDパイプライン追加
-- 2026-01-08 (セッション5): パフォーマンステスト・セキュリティテスト追加
-- 2026-01-08 (セッション4): E2Eテスト・CLI統合テスト追加
-- 2026-01-08 (セッション3): Database永続化層追加
