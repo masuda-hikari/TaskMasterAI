@@ -130,6 +130,158 @@ rate_limiters = {
     "api": RateLimiter(requests_per_minute=100, burst_size=20),  # 認証済みAPIは緩め
 }
 
+
+# ===== メトリクス収集 =====
+class MetricsCollector:
+    """
+    リクエスト統計・メトリクス収集
+
+    Prometheus形式での出力をサポートし、外部監視システムとの統合を可能にする
+    """
+
+    def __init__(self):
+        """初期化"""
+        self._start_time = time.time()
+        self._request_count: dict[str, int] = defaultdict(int)
+        self._error_count: dict[str, int] = defaultdict(int)
+        self._response_times: dict[str, list[float]] = defaultdict(list)
+        self._status_codes: dict[int, int] = defaultdict(int)
+        # 直近のレスポンスタイムのみ保持（メモリ節約）
+        self._max_response_samples = 1000
+
+    def record_request(
+        self,
+        endpoint: str,
+        method: str,
+        status_code: int,
+        response_time_ms: float
+    ) -> None:
+        """
+        リクエストを記録
+
+        Args:
+            endpoint: エンドポイントパス
+            method: HTTPメソッド
+            status_code: レスポンスステータスコード
+            response_time_ms: レスポンスタイム（ミリ秒）
+        """
+        key = f"{method}:{endpoint}"
+        self._request_count[key] += 1
+        self._status_codes[status_code] += 1
+
+        if status_code >= 400:
+            self._error_count[key] += 1
+
+        # レスポンスタイムを記録（最新のサンプルのみ保持）
+        times = self._response_times[key]
+        times.append(response_time_ms)
+        if len(times) > self._max_response_samples:
+            self._response_times[key] = times[-self._max_response_samples:]
+
+    def get_metrics(self) -> dict:
+        """
+        メトリクスを辞書形式で取得
+
+        Returns:
+            メトリクス辞書
+        """
+        uptime = time.time() - self._start_time
+        total_requests = sum(self._request_count.values())
+        total_errors = sum(self._error_count.values())
+
+        # 全体のレスポンスタイム統計
+        all_times = []
+        for times in self._response_times.values():
+            all_times.extend(times)
+
+        avg_response_time = (
+            sum(all_times) / len(all_times) if all_times else 0
+        )
+        max_response_time = max(all_times) if all_times else 0
+
+        return {
+            "uptime_seconds": round(uptime, 2),
+            "total_requests": total_requests,
+            "total_errors": total_errors,
+            "error_rate": round(total_errors / total_requests, 4) if total_requests > 0 else 0,
+            "avg_response_time_ms": round(avg_response_time, 2),
+            "max_response_time_ms": round(max_response_time, 2),
+            "requests_per_minute": round(total_requests / (uptime / 60), 2) if uptime > 0 else 0,
+            "status_codes": dict(self._status_codes),
+            "endpoints": {
+                key: {
+                    "count": count,
+                    "errors": self._error_count.get(key, 0),
+                    "avg_response_time_ms": round(
+                        sum(self._response_times.get(key, [])) /
+                        len(self._response_times.get(key, [1])), 2
+                    ) if self._response_times.get(key) else 0
+                }
+                for key, count in self._request_count.items()
+            }
+        }
+
+    def get_prometheus_metrics(self) -> str:
+        """
+        Prometheus形式でメトリクスを出力
+
+        Returns:
+            Prometheus形式のメトリクス文字列
+        """
+        lines = []
+        metrics = self.get_metrics()
+
+        # アップタイム
+        lines.append("# HELP taskmasterai_uptime_seconds サーバー稼働時間（秒）")
+        lines.append("# TYPE taskmasterai_uptime_seconds gauge")
+        lines.append(f"taskmasterai_uptime_seconds {metrics['uptime_seconds']}")
+
+        # 総リクエスト数
+        lines.append("# HELP taskmasterai_requests_total 総リクエスト数")
+        lines.append("# TYPE taskmasterai_requests_total counter")
+        lines.append(f"taskmasterai_requests_total {metrics['total_requests']}")
+
+        # エラー数
+        lines.append("# HELP taskmasterai_errors_total 総エラー数")
+        lines.append("# TYPE taskmasterai_errors_total counter")
+        lines.append(f"taskmasterai_errors_total {metrics['total_errors']}")
+
+        # エラー率
+        lines.append("# HELP taskmasterai_error_rate エラー率")
+        lines.append("# TYPE taskmasterai_error_rate gauge")
+        lines.append(f"taskmasterai_error_rate {metrics['error_rate']}")
+
+        # 平均レスポンスタイム
+        lines.append("# HELP taskmasterai_response_time_avg_ms 平均レスポンスタイム（ミリ秒）")
+        lines.append("# TYPE taskmasterai_response_time_avg_ms gauge")
+        lines.append(f"taskmasterai_response_time_avg_ms {metrics['avg_response_time_ms']}")
+
+        # ステータスコード別
+        lines.append("# HELP taskmasterai_http_status HTTPステータスコード別カウント")
+        lines.append("# TYPE taskmasterai_http_status counter")
+        for code, count in metrics['status_codes'].items():
+            lines.append(f'taskmasterai_http_status{{code="{code}"}} {count}')
+
+        # エンドポイント別リクエスト数
+        lines.append("# HELP taskmasterai_endpoint_requests エンドポイント別リクエスト数")
+        lines.append("# TYPE taskmasterai_endpoint_requests counter")
+        for endpoint, data in metrics['endpoints'].items():
+            method, path = endpoint.split(":", 1) if ":" in endpoint else ("UNKNOWN", endpoint)
+            lines.append(f'taskmasterai_endpoint_requests{{method="{method}",path="{path}"}} {data["count"]}')
+
+        return "\n".join(lines)
+
+    def reset(self) -> None:
+        """メトリクスをリセット"""
+        self._request_count.clear()
+        self._error_count.clear()
+        self._response_times.clear()
+        self._status_codes.clear()
+
+
+# グローバルメトリクスコレクター
+metrics_collector = MetricsCollector()
+
 # FastAPIのインポート（オプショナル）
 try:
     from fastapi import FastAPI, HTTPException, Depends, status, Header
@@ -595,6 +747,33 @@ TaskMasterAI APIは、メール管理、カレンダー管理、タスク自動�
     if os.getenv("DISABLE_RATE_LIMIT", "").lower() != "true":
         app.add_middleware(RateLimitMiddleware)
 
+    # メトリクス収集ミドルウェア
+    class MetricsMiddleware(BaseHTTPMiddleware):
+        """リクエスト統計収集ミドルウェア"""
+
+        async def dispatch(self, request: Request, call_next):
+            # メトリクスエンドポイント自体は計測対象外
+            if str(request.url.path) in ["/metrics", "/metrics/prometheus"]:
+                return await call_next(request)
+
+            start_time = time.time()
+            response = await call_next(request)
+            duration_ms = (time.time() - start_time) * 1000
+
+            # メトリクスを記録
+            metrics_collector.record_request(
+                endpoint=str(request.url.path),
+                method=request.method,
+                status_code=response.status_code,
+                response_time_ms=duration_ms
+            )
+
+            return response
+
+    # メトリクス収集有効化（環境変数で無効化可能）
+    if os.getenv("DISABLE_METRICS", "").lower() != "true":
+        app.add_middleware(MetricsMiddleware)
+
     # サービスの初期化
     auth_service = AuthService()
     billing_service = BillingService()
@@ -651,6 +830,25 @@ TaskMasterAI APIは、メール管理、カレンダー管理、タスク自動�
             status="healthy",
             version="0.1.0",
             timestamp=datetime.now()
+        )
+
+    # メトリクスエンドポイント
+    @app.get("/metrics", tags=["監視"],
+             summary="サービスメトリクスを取得",
+             description="リクエスト統計、レスポンスタイム等のメトリクスを取得します。認証不要。")
+    async def get_metrics():
+        """メトリクスエンドポイント（JSON形式）"""
+        return metrics_collector.get_metrics()
+
+    @app.get("/metrics/prometheus", tags=["監視"],
+             summary="Prometheusメトリクスを取得",
+             description="Prometheus形式のメトリクスを取得します。外部監視システム連携用。")
+    async def get_prometheus_metrics():
+        """メトリクスエンドポイント（Prometheus形式）"""
+        from starlette.responses import PlainTextResponse
+        return PlainTextResponse(
+            content=metrics_collector.get_prometheus_metrics(),
+            media_type="text/plain; charset=utf-8"
         )
 
     # 認証エンドポイント
