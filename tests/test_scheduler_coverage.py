@@ -483,12 +483,12 @@ class TestSchedulerProposeMeeting:
         scheduler._service = MagicMock()
 
         tz = ZoneInfo("Asia/Tokyo")
-        today = datetime.now(tz)
-        # 平日を見つける
-        if today.weekday() >= 5:
-            today = today + timedelta(days=(7 - today.weekday()))
+        # 明日以降の平日を見つける（現在時刻の影響を避ける）
+        future = datetime.now(tz) + timedelta(days=1)
+        while future.weekday() >= 5:  # 週末の場合は次の平日へ
+            future = future + timedelta(days=1)
 
-        start = today.replace(hour=9, minute=0, second=0, microsecond=0)
+        start = future.replace(hour=9, minute=0, second=0, microsecond=0)
 
         with patch.object(scheduler, 'get_events', return_value=[]):
             proposals = scheduler.propose_meeting(
@@ -512,11 +512,12 @@ class TestSchedulerProposeMeeting:
         scheduler._service = MagicMock()
 
         tz = ZoneInfo("Asia/Tokyo")
-        today = datetime.now(tz)
-        if today.weekday() >= 5:
-            today = today + timedelta(days=(7 - today.weekday()))
+        # 明日以降の平日を見つける（現在時刻の影響を避ける）
+        future = datetime.now(tz) + timedelta(days=1)
+        while future.weekday() >= 5:  # 週末の場合は次の平日へ
+            future = future + timedelta(days=1)
 
-        start = today.replace(hour=9, minute=0, second=0, microsecond=0)
+        start = future.replace(hour=9, minute=0, second=0, microsecond=0)
 
         with patch.object(scheduler, 'get_events', return_value=[]):
             proposals = scheduler.propose_meeting(

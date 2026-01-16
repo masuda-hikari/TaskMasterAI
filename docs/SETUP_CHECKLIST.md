@@ -96,7 +96,7 @@ STRIPE_PRICE_TEAM=price_...
 
 ## 3. LLM API設定（いずれか1つ必須）
 
-### 3.1 OpenAI
+### 3.1 OpenAI（有料）
 - [ ] [OpenAI Platform](https://platform.openai.com/) にアクセス
 - [ ] アカウント作成・ログイン
 - [ ] 「API Keys」→「Create new secret key」
@@ -106,7 +106,7 @@ STRIPE_PRICE_TEAM=price_...
 OPENAI_API_KEY=sk-...
 ```
 
-### 3.2 Anthropic（代替）
+### 3.2 Anthropic（有料）
 - [ ] [Anthropic Console](https://console.anthropic.com/) にアクセス
 - [ ] アカウント作成・ログイン
 - [ ] 「API Keys」→ 新規キー作成
@@ -115,6 +115,43 @@ OPENAI_API_KEY=sk-...
 ```
 ANTHROPIC_API_KEY=sk-ant-...
 ```
+
+### 3.3 Groq（無料枠あり、推奨）
+Groqは無料枠があり、高速な推論が可能です。開発・テスト用に最適。
+
+- [ ] [Groq Console](https://console.groq.com/) にアクセス
+- [ ] Googleアカウントでサインアップ（無料）
+- [ ] 「API Keys」→「Create API Key」
+- [ ] キーをコピー
+
+```
+GROQ_API_KEY=gsk_...
+```
+
+**無料枠の制限（2024年時点）:**
+- 30リクエスト/分
+- 14,400リクエスト/日
+- Llama 3.1 8B, 70B等が利用可能
+
+### 3.4 Ollama（完全無料、ローカル）
+Ollamaはローカルで動作するLLMランナーです。インターネット接続不要、完全無料。
+
+- [ ] [Ollama](https://ollama.ai/) をダウンロード・インストール
+- [ ] ターミナルで `ollama pull llama3.2` を実行
+- [ ] `ollama serve` でサーバー起動
+
+```
+OLLAMA_BASE_URL=http://localhost:11434
+```
+
+**メリット:**
+- 完全無料、API料金なし
+- プライバシー（データがローカルに留まる）
+- オフライン動作可能
+
+**デメリット:**
+- GPU必要（CPUでも動作するが遅い）
+- ストレージが必要（モデルサイズ数GB）
 
 ---
 

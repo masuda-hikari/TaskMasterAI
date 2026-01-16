@@ -1,6 +1,6 @@
 ﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿# TaskMasterAI - ステータス
 
-最終更新: 2026-01-12 (セッション35)
+最終更新: 2026-01-17 (セッション36)
 
 ## 現在の状態
 - 状態: Phase 2 収益化基盤構築完了、本番運用準備完了
@@ -17,8 +17,10 @@
 - 節約時間レポート: ROI可視化・アップグレード推奨機能追加
 - 節約時間計算UI: ランディングページにインタラクティブROI計算機追加
 - FAQセクション: ランディングページに6件のFAQ追加・コンバージョン率向上
-- **ソーシャルシェア機能: Twitter/LinkedIn/Facebook/LINE対応（NEW - セッション35）**
-- **リファラルプログラムセクション: 友達紹介特典の訴求UI追加（NEW - セッション35）**
+- ソーシャルシェア機能: Twitter/LinkedIn/Facebook/LINE対応（セッション35）
+- リファラルプログラムセクション: 友達紹介特典の訴求UI追加（セッション35）
+- **Groq/Ollama LLMプロバイダー追加（NEW - セッション36）**
+- **代替LLM戦略: 外部API不要でLLM機能利用可能に**
 
 ## 収益化進捗
 - 現在の収益: ¥0
@@ -110,7 +112,7 @@
 - [x] **ロギング**: 構造化ロギングシステム
 
 ## テスト状況
-- 総テスト数: 1032件（1031パス、1スキップ）
+- 総テスト数: 1053件（1052パス、1スキップ）
 - 主要モジュール:
   - email_bot.py: 98%
   - api.py: 93%
@@ -139,6 +141,18 @@
 - **外部API認証情報が未取得**: 実環境統合テストおよびデプロイにはGoogle/Stripe/LLMのAPIキーが必要
 
 ## 最近の変更
+- 2026-01-17 (セッション36): Groq/Ollama LLMプロバイダー追加
+  - src/llm.py: GroqClient, OllamaClient追加
+    - Groq: 無料枠あり、高速推論（Llama 3.1対応）
+    - Ollama: ローカルLLM、完全無料、プライバシー保護
+  - LLMService: 新プロバイダーの自動検出・フォールバック
+  - create_llm_service: prefer_local オプション追加
+  - tests/test_llm_providers.py: 新規 - 21件
+  - tests/test_scheduler_coverage.py: 時間依存テスト修正
+  - config/.env.example: Groq/Ollama設定追加
+  - docs/SETUP_CHECKLIST.md: Groq/Ollamaセットアップ手順追加
+  - requirements.txt: groqパッケージ追加
+  - テスト: 1031 → 1052件 (+21件)
 - 2026-01-12 (セッション35): ソーシャルシェア・リファラルプログラム追加
   - landing/index.html: ソーシャルシェア機能追加
     - Twitter (X)、LinkedIn、Facebook、LINEシェアボタン

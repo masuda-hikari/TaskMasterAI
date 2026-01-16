@@ -19,6 +19,8 @@ class LLMProvider(Enum):
     """LLMプロバイダー"""
     OPENAI = "openai"
     ANTHROPIC = "anthropic"
+    GROQ = "groq"
+    OLLAMA = "ollama"
     MOCK = "mock"
 
 
@@ -216,6 +218,179 @@ class AnthropicClient(BaseLLMClient):
             )
 
 
+class GroqClient(BaseLLMClient):
+    """Groq APIクライアント（無料枠あり、高速推論）"""
+
+    DEFAULT_MODEL = "llama-3.1-8b-instant"
+
+    def __init__(self, config: LLMConfig):
+        self.config = config
+        self.api_key = config.api_key or os.getenv("GROQ_API_KEY")
+        self._client = None
+
+        if self.api_key:
+            try:
+                from groq import Groq
+                self._client = Groq(api_key=self.api_key)
+            except ImportError:
+                logger.warning("groqパッケージがインストールされていません: pip install groq")
+
+    def is_available(self) -> bool:
+        return self._client is not None and self.api_key is not None
+
+    def complete(
+        self,
+        prompt: str,
+        system_prompt: Optional[str] = None,
+        json_mode: bool = False
+    ) -> LLMResponse:
+        if not self.is_available():
+            return LLMResponse(
+                content="",
+                provider=LLMProvider.GROQ,
+                model=self.config.model,
+                success=False,
+                error_message="Groq APIが利用できません"
+            )
+
+        try:
+            messages = []
+            if system_prompt:
+                messages.append({"role": "system", "content": system_prompt})
+            messages.append({"role": "user", "content": prompt})
+
+            kwargs = {
+                "model": self.config.model or self.DEFAULT_MODEL,
+                "messages": messages,
+                "temperature": self.config.temperature,
+                "max_tokens": self.config.max_tokens,
+            }
+
+            if json_mode:
+                kwargs["response_format"] = {"type": "json_object"}
+
+            response = self._client.chat.completions.create(**kwargs)
+
+            content = response.choices[0].message.content
+            tokens = response.usage.total_tokens if response.usage else 0
+
+            return LLMResponse(
+                content=content,
+                provider=LLMProvider.GROQ,
+                model=self.config.model or self.DEFAULT_MODEL,
+                tokens_used=tokens,
+                success=True
+            )
+
+        except Exception as e:
+            logger.error(f"Groq API呼び出しエラー: {e}")
+            return LLMResponse(
+                content="",
+                provider=LLMProvider.GROQ,
+                model=self.config.model,
+                success=False,
+                error_message=str(e)
+            )
+
+
+class OllamaClient(BaseLLMClient):
+    """Ollama APIクライアント（ローカルLLM、完全無料）"""
+
+    DEFAULT_MODEL = "llama3.2"
+    DEFAULT_BASE_URL = "http://localhost:11434"
+
+    def __init__(self, config: LLMConfig, base_url: Optional[str] = None):
+        self.config = config
+        self.base_url = base_url or os.getenv("OLLAMA_BASE_URL", self.DEFAULT_BASE_URL)
+        self._available: Optional[bool] = None
+
+    def is_available(self) -> bool:
+        """Ollamaサーバーが起動しているか確認"""
+        if self._available is not None:
+            return self._available
+
+        try:
+            import urllib.request
+            import urllib.error
+
+            req = urllib.request.Request(f"{self.base_url}/api/tags", method="GET")
+            with urllib.request.urlopen(req, timeout=2) as response:
+                self._available = response.status == 200
+        except Exception:
+            self._available = False
+
+        return self._available
+
+    def complete(
+        self,
+        prompt: str,
+        system_prompt: Optional[str] = None,
+        json_mode: bool = False
+    ) -> LLMResponse:
+        if not self.is_available():
+            return LLMResponse(
+                content="",
+                provider=LLMProvider.OLLAMA,
+                model=self.config.model,
+                success=False,
+                error_message="Ollamaサーバーが利用できません。ollama serveを実行してください"
+            )
+
+        try:
+            import urllib.request
+            import urllib.error
+
+            model = self.config.model or self.DEFAULT_MODEL
+            full_prompt = prompt
+            if system_prompt:
+                full_prompt = f"{system_prompt}\n\n{prompt}"
+
+            payload = {
+                "model": model,
+                "prompt": full_prompt,
+                "stream": False,
+                "options": {
+                    "temperature": self.config.temperature,
+                    "num_predict": self.config.max_tokens,
+                }
+            }
+
+            if json_mode:
+                payload["format"] = "json"
+
+            data = json.dumps(payload).encode("utf-8")
+            req = urllib.request.Request(
+                f"{self.base_url}/api/generate",
+                data=data,
+                headers={"Content-Type": "application/json"},
+                method="POST"
+            )
+
+            with urllib.request.urlopen(req, timeout=60) as response:
+                result = json.loads(response.read().decode("utf-8"))
+
+            content = result.get("response", "")
+            tokens = result.get("eval_count", 0) + result.get("prompt_eval_count", 0)
+
+            return LLMResponse(
+                content=content,
+                provider=LLMProvider.OLLAMA,
+                model=model,
+                tokens_used=tokens,
+                success=True
+            )
+
+        except Exception as e:
+            logger.error(f"Ollama API呼び出しエラー: {e}")
+            return LLMResponse(
+                content="",
+                provider=LLMProvider.OLLAMA,
+                model=self.config.model,
+                success=False,
+                error_message=str(e)
+            )
+
+
 class MockLLMClient(BaseLLMClient):
     """テスト用モックLLMクライアント"""
 
@@ -283,6 +458,8 @@ class LLMService:
         fallback_provider: Optional[LLMProvider] = LLMProvider.ANTHROPIC,
         openai_api_key: Optional[str] = None,
         anthropic_api_key: Optional[str] = None,
+        groq_api_key: Optional[str] = None,
+        ollama_base_url: Optional[str] = None,
         model: Optional[str] = None
     ):
         """
@@ -293,6 +470,8 @@ class LLMService:
             fallback_provider: フォールバックプロバイダー
             openai_api_key: OpenAI APIキー
             anthropic_api_key: Anthropic APIキー
+            groq_api_key: Groq APIキー（無料枠あり）
+            ollama_base_url: OllamaサーバーURL（デフォルト: localhost:11434）
             model: 使用モデル名
         """
         self.primary_provider = primary_provider
@@ -315,6 +494,25 @@ class LLMService:
                 model=model or AnthropicClient.DEFAULT_MODEL,
                 api_key=anthropic_api_key
             ))
+
+        # Groqクライアント初期化（無料枠あり、高速推論）
+        if groq_api_key or os.getenv("GROQ_API_KEY"):
+            self._clients[LLMProvider.GROQ] = GroqClient(LLMConfig(
+                provider=LLMProvider.GROQ,
+                model=model or GroqClient.DEFAULT_MODEL,
+                api_key=groq_api_key
+            ))
+
+        # Ollamaクライアント初期化（ローカルLLM、完全無料）
+        ollama_client = OllamaClient(
+            LLMConfig(
+                provider=LLMProvider.OLLAMA,
+                model=model or OllamaClient.DEFAULT_MODEL
+            ),
+            base_url=ollama_base_url
+        )
+        if ollama_client.is_available():
+            self._clients[LLMProvider.OLLAMA] = ollama_client
 
         # モッククライアント（常に利用可能）
         self._clients[LLMProvider.MOCK] = MockLLMClient()
@@ -450,7 +648,10 @@ class LLMService:
 def create_llm_service(
     use_mock: bool = False,
     openai_key: Optional[str] = None,
-    anthropic_key: Optional[str] = None
+    anthropic_key: Optional[str] = None,
+    groq_key: Optional[str] = None,
+    ollama_url: Optional[str] = None,
+    prefer_local: bool = False
 ) -> LLMService:
     """
     LLMServiceファクトリ
@@ -459,6 +660,9 @@ def create_llm_service(
         use_mock: モックモードを使用
         openai_key: OpenAI APIキー
         anthropic_key: Anthropic APIキー
+        groq_key: Groq APIキー（無料枠あり）
+        ollama_url: OllamaサーバーURL
+        prefer_local: ローカルLLM（Ollama）を優先
 
     Returns:
         LLMService
@@ -469,9 +673,20 @@ def create_llm_service(
             fallback_provider=None
         )
 
+    # ローカルLLM優先モード
+    if prefer_local:
+        return LLMService(
+            primary_provider=LLMProvider.OLLAMA,
+            fallback_provider=LLMProvider.GROQ,
+            groq_api_key=groq_key,
+            ollama_base_url=ollama_url
+        )
+
     return LLMService(
         openai_api_key=openai_key,
-        anthropic_api_key=anthropic_key
+        anthropic_api_key=anthropic_key,
+        groq_api_key=groq_key,
+        ollama_base_url=ollama_url
     )
 
 
