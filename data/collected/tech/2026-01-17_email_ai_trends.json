@@ -1,0 +1,112 @@
+{
+  "collection_date": "2026-01-17",
+  "category": "tech_trends",
+  "topic": "メール管理AI技術動向2026",
+  "sources": [
+    {
+      "title": "15 Best AI Assistants for Email Productivity in 2026",
+      "url": "https://gmelius.com/blog/best-ai-assistants-for-email"
+    },
+    {
+      "title": "Gmail in 2026: How AI is Revolutionizing Email Productivity",
+      "url": "https://workalizer.com/blog/apps-tools/the-future-of-gmail-ai-powered-productivity-in-2026/"
+    },
+    {
+      "title": "Google's 2026 Gmail Update: Gemini AI Boosts Productivity",
+      "url": "https://www.webpronews.com/googles-2026-gmail-update-gemini-ai-boosts-productivity-amid-privacy-concerns/"
+    }
+  ],
+  "key_technologies": {
+    "llm_integration": {
+      "trend": "LLM、セマンティック検索、RAG技術が主流",
+      "impact": "単純なスパムフィルタを超えた高度な理解・生成",
+      "description": "メールツールは単なるメッセージ読み取りを超え、ビジネスプロセス全体を自動実行可能に"
+    },
+    "gmail_gemini_ai": {
+      "announcement": "2026年1月発表",
+      "features": [
+        "AI Overviews（メール概要自動生成）",
+        "パーソナライズAI Inbox",
+        "強化された文章作成ツール",
+        "'Help Me Write'（プロンプトからメール全文作成）",
+        "AIによる要約機能"
+      ],
+      "pricing_change": "プレミアム機能が全個人ユーザーに無料開放"
+    },
+    "microsoft_outlook": {
+      "integration": "Copilot統合",
+      "pricing": "AI機能をコンシューマーサブスクリプションに統合"
+    }
+  },
+  "tool_categories": {
+    "integrated_wrappers": {
+      "description": "既存メールクライアント内で動作",
+      "examples": [
+        {
+          "name": "Gmelius",
+          "benefit": "GmailをAI駆動の生産性プラットフォームに変換"
+        },
+        {
+          "name": "SaneBox",
+          "benefit": "AIベースの分類で週3時間節約"
+        }
+      ]
+    },
+    "speed_first_standalone": {
+      "description": "スピード重視の独立クライアント",
+      "examples": [
+        {
+          "name": "Superhuman",
+          "metrics": "週4時間/人節約、12時間速い応答、2倍のメール処理"
+        },
+        {
+          "name": "Shortwave",
+          "features": "関連メールのグループ化、ToDoタスク自動抽出"
+        }
+      ]
+    },
+    "specialized_tools": {
+      "examples": [
+        {
+          "name": "Lindy",
+          "feature": "他の業務アプリとの深い統合"
+        },
+        {
+          "name": "Proton Scribe",
+          "feature": "プライバシー重視、メール作成・要約"
+        },
+        {
+          "name": "GenFuse AI",
+          "feature": "メール受信からマルチステップビジネスプロジェクト起動"
+        }
+      ]
+    }
+  },
+  "productivity_impact": {
+    "average_time_spent": "平均的プロフェッショナルは1日4.1時間をメール管理に費やす",
+    "savings_potential": "AIツールで週3-5時間の節約が標準的",
+    "roi": "時間節約による投資対効果が非常に高い"
+  },
+  "implications_for_taskmasterai": {
+    "technical_direction": [
+      "LLM統合は必須（OpenAI/Anthropic APIを活用）",
+      "RAG技術でユーザー固有のコンテキスト学習",
+      "セマンティック検索で高度なメール分類"
+    ],
+    "feature_priorities": [
+      "メール要約・ドラフト作成（基本機能）",
+      "タスク自動抽出（Shortwaveモデル）",
+      "マルチステップ自動化（GenFuse AIモデル）"
+    ],
+    "competitive_positioning": [
+      "Gmail/Outlook両対応でプラットフォーム非依存",
+      "プライバシー重視（Proton Scribeモデル）",
+      "統合アプローチ（Lindyモデル + カレンダー統合）"
+    ],
+    "privacy_concerns": {
+      "issue": "Gemini AIのプライバシー懸念が報道されている",
+      "opportunity": "プライバシー重視設計で差別化可能",
+      "strategy": "データ非保存・ローカル処理オプション提供"
+    }
+  }
+}

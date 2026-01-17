@@ -1,0 +1,148 @@
+{
+  "collection_date": "2026-01-17",
+  "category": "competitor_analysis",
+  "topic": "AIスケジュール管理ツール競合分析",
+  "competitors": [
+    {
+      "name": "Clara (x.ai)",
+      "url": "https://x.ai",
+      "status": "ベータ版",
+      "pricing": {
+        "historical": "$99-199/月",
+        "current": "ベータ版のため詳細不明"
+      },
+      "strengths": [
+        "エグゼクティブグレードのアシスタント体験",
+        "メールでのやり取りをスムーズに処理",
+        "プロフェッショナルな対応",
+        "信頼性重視のハイタッチサービス"
+      ],
+      "weaknesses": [
+        "個人タスク管理機能なし",
+        "日常的なスケジューリングには不向き",
+        "高額な価格設定"
+      ],
+      "target_user": "ハイタッチサービスを求めるエグゼクティブ"
+    },
+    {
+      "name": "Motion",
+      "url": "https://usemotion.com",
+      "strengths": [
+        "プロジェクト管理ソフトとカレンダーの統合",
+        "AIによるタスク優先順位付け",
+        "全プロジェクト・タスク・会議の一元管理",
+        "チーム向け高度機能"
+      ],
+      "weaknesses": [
+        "個人利用には機能過多の可能性",
+        "学習曲線が急"
+      ],
+      "target_user": "忙しい個人・プロジェクト管理が必要なチーム",
+      "comparison": "Reclaimと比較して包括的なタスク・カレンダー統合"
+    },
+    {
+      "name": "Reclaim AI",
+      "url": "https://reclaim.ai",
+      "pricing": {
+        "free_plan": "永久無料プラン提供",
+        "calendar_sync": "無制限"
+      },
+      "strengths": [
+        "ハイブリッド専門職向け自動タイムブロッキング",
+        "ワークライフバランス最適化",
+        "高いコストパフォーマンス",
+        "大企業での時間防御"
+      ],
+      "weaknesses": [
+        "カレンダーツールではなく付加ツール",
+        "Motionほどの包括的機能はなし"
+      ],
+      "target_user": "個人ユーザー・大企業社員",
+      "comparison": "Motionより個人向け、Calendlyより高機能"
+    },
+    {
+      "name": "Calendly",
+      "url": "https://calendly.com",
+      "pricing": {
+        "free_plan": "永久無料プラン提供",
+        "calendar_limit": "最大6カレンダー連携"
+      },
+      "strengths": [
+        "シンプルで使いやすい",
+        "アポイント予約に特化",
+        "会議管理が簡単"
+      ],
+      "weaknesses": [
+        "AI機能は限定的",
+        "カレンダー連携数制限"
+      ],
+      "target_user": "シンプルな予約管理が必要なユーザー"
+    },
+    {
+      "name": "Superhuman",
+      "url": "https://superhuman.com",
+      "strengths": [
+        "チームで週4時間/人の節約",
+        "12時間速い応答",
+        "2倍のメール処理能力"
+      ],
+      "focus": "メール生産性特化",
+      "target_user": "メール処理が多いチーム"
+    },
+    {
+      "name": "Shortwave",
+      "url": "https://www.shortwave.com",
+      "strengths": [
+        "Gmailユーザー向け",
+        "関連メールのグループ化",
+        "ToDoタスク自動抽出"
+      ],
+      "focus": "Gmail拡張特化"
+    },
+    {
+      "name": "SaneBox",
+      "strengths": [
+        "週3時間の節約",
+        "AIベースのメール分類"
+      ],
+      "focus": "メール整理特化"
+    }
+  ],
+  "market_insights": {
+    "pricing_tiers": {
+      "low": "$0-10/月（無料・基本プラン）",
+      "mid": "$20-50/月（個人Pro）",
+      "high": "$99-199/月（エグゼクティブ）"
+    },
+    "key_differentiators": [
+      "統合度（メール・カレンダー・タスク）",
+      "AI機能の深さ",
+      "ターゲットユーザー（個人 vs チーム vs エグゼクティブ）",
+      "価格帯"
+    ],
+    "productivity_claims": {
+      "time_saved_weekly": "3-4時間が標準的な訴求",
+      "email_processing": "2倍の処理速度",
+      "response_time": "12時間短縮"
+    }
+  },
+  "taskmasterai_positioning": {
+    "differentiation_strategy": [
+      "統合型アプローチ（メール+カレンダー+タスク）",
+      "日本市場特化（日本語ネイティブ、円建て価格）",
+      "中価格帯（¥1,480-3,980）でバランス型",
+      "確認モード重視（安全性・信頼性）"
+    ],
+    "competitive_advantages": [
+      "オールインワンソリューション（Claraの高品質 + Motionの統合 + Reclaimのコスパ）",
+      "日本語完全対応",
+      "透明性・安全性重視の設計",
+      "ROI可視化機能"
+    ],
+    "target_gaps": [
+      "日本市場向け専用ツールの不足",
+      "中価格帯の統合ソリューション不足",
+      "プライバシー・確認重視ツールの不足"
+    ]
+  }
+}

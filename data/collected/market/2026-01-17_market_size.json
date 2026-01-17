@@ -1,0 +1,72 @@
+{
+  "collection_date": "2026-01-17",
+  "category": "market_data",
+  "topic": "AI仮想アシスタント市場規模",
+  "sources": [
+    {
+      "name": "Global Growth Insights",
+      "url": "https://www.globalgrowthinsights.com/market-reports/virtual-assistant-market-121487",
+      "data": {
+        "2025_usd": "19.5億ドル",
+        "2026_usd": "24.65億ドル",
+        "note": "グローバル市場"
+      }
+    },
+    {
+      "name": "IMARC Group",
+      "url": "https://www.imarcgroup.com/intelligent-virtual-assistant-market",
+      "data": {
+        "2025_usd": "17.1億ドル",
+        "2034_usd": "124.9億ドル",
+        "cagr": "24.76%",
+        "period": "2026-2034"
+      }
+    },
+    {
+      "name": "Mordor Intelligence",
+      "url": "https://www.mordorintelligence.com/ja/industry-reports/intelligent-virtual-assistant-market",
+      "data": {
+        "2025_jpy": "1960億円",
+        "2030_jpy": "8072億円",
+        "cagr": "32.72%",
+        "note": "非常に高い成長率"
+      }
+    },
+    {
+      "name": "Straits Research",
+      "url": "https://straitsresearch.com/report/intelligent-virtual-assistant-market",
+      "data": {
+        "2024_usd": "10.83億ドル",
+        "2025_usd": "12.59億ドル",
+        "2033_usd": "41.73億ドル",
+        "cagr": "17.9%"
+      }
+    },
+    {
+      "name": "Kings Research",
+      "url": "https://www.kingsresearch.com/ja/intelligent-virtual-assistant-market-1862",
+      "data": {
+        "2024_usd": "6.37億ドル",
+        "2025_usd": "7.92億ドル",
+        "2032_usd": "43.09億ドル",
+        "cagr": "27.38%"
+      }
+    }
+  ],
+  "key_insights": {
+    "market_size_2026_estimate": "20-25億ドル（約3000億円）",
+    "growth_drivers": [
+      "AI・機械学習の急速な進歩",
+      "ビジネス自動化需要の増加",
+      "IoTアプリケーションの拡大"
+    ],
+    "regional_leader": "北米が30.5%超のシェア（2025年）",
+    "projection_2030": "約5000-8000億円規模へ成長見込み"
+  },
+  "implications_for_taskmasterai": {
+    "market_opportunity": "急成長市場で参入タイミング良好",
+    "competitive_landscape": "大手プレイヤー増加も、ニッチ特化で差別化可能",
+    "pricing_strategy": "市場成長に伴い価格受容性向上",
+    "target_market_japan": "日本市場は特に業務効率化ニーズ高い"
+  }
+}
