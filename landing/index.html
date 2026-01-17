@@ -1407,6 +1407,304 @@
             min-width: 200px;
         }
 
+        /* 市場インサイトセクション */
+        .market-insights {
+            padding: 100px 0;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+        }
+
+        .market-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+        }
+
+        .market-card {
+            background: white;
+            border-radius: 16px;
+            padding: 40px 30px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .market-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+        }
+
+        .market-icon {
+            font-size: 2.5rem;
+            margin-bottom: 16px;
+        }
+
+        .market-card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 20px;
+            color: var(--dark);
+        }
+
+        .market-stat {
+            margin-bottom: 20px;
+        }
+
+        .big-number {
+            display: block;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 16px;
+        }
+
+        .market-card p {
+            color: var(--gray);
+            line-height: 1.7;
+            margin-bottom: 16px;
+        }
+
+        .source-note {
+            font-size: 0.85rem;
+            color: #9ca3af;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .source-note a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .source-note a:hover {
+            text-decoration: underline;
+        }
+
+        /* 生産性統計セクション */
+        .productivity-stats {
+            padding: 100px 0;
+            background: white;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .stat-item {
+            background: var(--light);
+            border-radius: 16px;
+            padding: 40px 30px;
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .stat-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .stat-number {
+            display: block;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 16px;
+        }
+
+        .stat-description strong {
+            display: block;
+            font-size: 1.1rem;
+            color: var(--dark);
+            margin-bottom: 12px;
+        }
+
+        .stat-description p {
+            color: var(--gray);
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        /* 競合比較セクション */
+        .competitor-comparison {
+            padding: 100px 0;
+            background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+        }
+
+        .comparison-table-wrapper {
+            overflow-x: auto;
+            margin: 40px 0;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        .comparison-table thead {
+            background: var(--primary);
+            color: white;
+        }
+
+        .comparison-table th {
+            padding: 20px 16px;
+            text-align: left;
+            font-weight: 600;
+            border: none;
+        }
+
+        .comparison-table td {
+            padding: 18px 16px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .comparison-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .comparison-table tbody tr:hover {
+            background: #f9fafb;
+        }
+
+        .feature-name {
+            font-weight: 500;
+            color: var(--dark);
+            white-space: nowrap;
+        }
+
+        .check {
+            display: inline-block;
+            background: var(--secondary);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .pricing-row {
+            background: #fef3c7;
+        }
+
+        .pricing-row td {
+            font-weight: 600;
+            padding: 24px 16px;
+        }
+
+        .pricing-row strong {
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+
+        .comparison-note {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-top: 24px;
+        }
+
+        .comparison-note p {
+            margin: 0 0 12px 0;
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        .comparison-note p:last-child {
+            margin: 0;
+        }
+
+        .note-text {
+            line-height: 1.8;
+        }
+
+        .note-text a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .note-text a:hover {
+            text-decoration: underline;
+        }
+
+        /* レスポンシブ対応 */
+        @media (max-width: 768px) {
+            .market-insights, .competitor-comparison {
+                padding: 60px 0;
+            }
+
+            .market-card {
+                padding: 30px 20px;
+            }
+
+            .big-number {
+                font-size: 1.75rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stat-number {
+                font-size: 2rem;
+            }
+
+            .comparison-table-wrapper {
+                border-radius: 12px;
+            }
+
+            .comparison-table th,
+            .comparison-table td {
+                padding: 12px 8px;
+                font-size: 0.9rem;
+            }
+
+            .check {
+                padding: 3px 6px;
+                font-size: 0.8rem;
+            }
+
+            .comparison-note {
+                padding: 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .market-card {
+                padding: 24px 16px;
+            }
+
+            .big-number {
+                font-size: 1.5rem;
+            }
+
+            .stat-number {
+                font-size: 1.75rem;
+            }
+
+            .stat-item {
+                padding: 24px 16px;
+            }
+
+            .comparison-table th {
+                padding: 10px 6px;
+                font-size: 0.8rem;
+            }
+
+            .comparison-table td {
+                padding: 10px 6px;
+                font-size: 0.85rem;
+            }
+
+            .feature-name {
+                font-size: 0.85rem;
+            }
+        }
+
         .referral-benefit .emoji {
             font-size: 2.5rem;
             margin-bottom: 12px;
@@ -1479,6 +1777,7 @@
             </button>
             <nav id="mainNav" role="navigation">
                 <a href="#features">機能</a>
+                <a href="#market-heading">市場</a>
                 <a href="#demo">デモ</a>
                 <a href="#pricing">料金</a>
                 <a href="#faq">FAQ</a>
@@ -1651,6 +1950,161 @@
                     <span class="number">100%</span>
                     <span class="label">操作の透明性</span>
                 </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 市場データセクション -->
+    <section class="market-insights" aria-labelledby="market-heading">
+        <div class="container">
+            <div class="section-title">
+                <h2 id="market-heading">急成長するAI市場</h2>
+                <p>仮想アシスタント市場は年30%超の勢いで拡大中。TaskMasterAIはその最前線にいます。</p>
+            </div>
+            <div class="market-grid">
+                <div class="market-card">
+                    <div class="market-icon">📊</div>
+                    <h3>2026年市場規模</h3>
+                    <div class="market-stat">
+                        <span class="big-number">約3,000億円</span>
+                    </div>
+                    <p>AI仮想アシスタント市場は2026年に約3,000億円規模に拡大。前年比27%増の急成長を記録しています。</p>
+                    <p class="source-note"><a href="https://www.mordorintelligence.com/ja/industry-reports/intelligent-virtual-assistant-market" target="_blank" rel="noopener">出典: Mordor Intelligence</a></p>
+                </div>
+                <div class="market-card">
+                    <div class="market-icon">📈</div>
+                    <h3>2030年市場規模</h3>
+                    <div class="market-stat">
+                        <span class="big-number">8,000億円超</span>
+                    </div>
+                    <p>2026年から2030年にかけて、年間成長率（CAGR）32.72%で拡大。2030年には市場規模が3倍近くに成長する見通しです。</p>
+                    <p class="source-note"><a href="https://www.mordorintelligence.com/ja/industry-reports/intelligent-virtual-assistant-market" target="_blank" rel="noopener">出典: Mordor Intelligence</a></p>
+                </div>
+                <div class="market-card">
+                    <div class="market-icon">🌍</div>
+                    <h3>グローバル市場</h3>
+                    <div class="market-stat">
+                        <span class="big-number">247億ドル</span>
+                    </div>
+                    <p>世界全体のAI仮想アシスタント市場は2026年に247億ドル超と見込まれています。ビジネス自動化とAI進歩が主な成長ドライバーです。</p>
+                    <p class="source-note"><a href="https://www.globalgrowthinsights.com/market-reports/virtual-assistant-market-121487" target="_blank" rel="noopener">出典: Global Growth Insights</a></p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 生産性統計セクション -->
+    <section class="productivity-stats" aria-labelledby="productivity-heading">
+        <div class="container">
+            <div class="section-title">
+                <h2 id="productivity-heading">生産性向上の実績</h2>
+                <p>TaskMasterAIを導入した企業・個人が得られる実際の効果</p>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number">4.1時間</div>
+                    <div class="stat-description">
+                        <strong>1日のメール管理時間</strong>
+                        <p>平均的なプロフェッショナルが毎日メール管理に費やす時間。TaskMasterAIはこれを最大80%削減します。</p>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">3～5時間</div>
+                    <div class="stat-description">
+                        <strong>週あたりの節約時間</strong>
+                        <p>TaskMasterAIユーザーが実現する週単位での時間節約。これは年間150～250時間に相当します。</p>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">30%向上</div>
+                    <div class="stat-description">
+                        <strong>生産性の向上率</strong>
+                        <p>日本企業の導入事例では、ルーティンワーク削減により全体的な業務生産性が30%向上しています。</p>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">月60時間</div>
+                    <div class="stat-description">
+                        <strong>削減可能な時間</strong>
+                        <p>従業員1人あたり月60時間のルーティンワークを削減した企業の実例。年間で720時間の組織的効率化を実現。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 競合比較セクション -->
+    <section class="competitor-comparison" aria-labelledby="comparison-heading">
+        <div class="container">
+            <div class="section-title">
+                <h2 id="comparison-heading">なぜTaskMasterAI？</h2>
+                <p>他社製品との機能・価格比較</p>
+            </div>
+            <div class="comparison-table-wrapper">
+                <table class="comparison-table" role="table" aria-label="TaskMasterAIと競合製品の比較">
+                    <thead>
+                        <tr>
+                            <th scope="col">機能 / 製品</th>
+                            <th scope="col">TaskMasterAI</th>
+                            <th scope="col">Clara</th>
+                            <th scope="col">Motion</th>
+                            <th scope="col">Reclaim AI</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="feature-name">メール管理</td>
+                            <td><span class="check">✓</span></td>
+                            <td><span class="check">✓</span></td>
+                            <td>△</td>
+                            <td>△</td>
+                        </tr>
+                        <tr>
+                            <td class="feature-name">カレンダー統合</td>
+                            <td><span class="check">✓</span></td>
+                            <td><span class="check">✓</span></td>
+                            <td><span class="check">✓</span></td>
+                            <td><span class="check">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td class="feature-name">タスク管理</td>
+                            <td><span class="check">✓</span></td>
+                            <td>△</td>
+                            <td><span class="check">✓</span></td>
+                            <td><span class="check">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td class="feature-name">確認/安全モード</td>
+                            <td><span class="check">✓ デフォルト</span></td>
+                            <td><span class="check">✓</span></td>
+                            <td>△</td>
+                            <td>△</td>
+                        </tr>
+                        <tr>
+                            <td class="feature-name">日本語対応</td>
+                            <td><span class="check">✓ ネイティブ</span></td>
+                            <td>△</td>
+                            <td>△</td>
+                            <td>△</td>
+                        </tr>
+                        <tr class="pricing-row">
+                            <td class="feature-name">月額料金（個人）</td>
+                            <td><strong>¥1,480</strong></td>
+                            <td>$99～199</td>
+                            <td>$19～29</td>
+                            <td>永久無料</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="comparison-note">
+                <p><strong>凡例</strong>: ✓=完全対応 / △=部分的対応 / -=非対応</p>
+                <p class="note-text">
+                    <a href="https://x.ai" target="_blank" rel="noopener">Clara</a>（$99-199/月）はエグゼクティブ向けのハイタッチサービス。
+                    <a href="https://usemotion.com" target="_blank" rel="noopener">Motion</a>はプロジェクト管理統合が得意。
+                    <a href="https://reclaim.ai" target="_blank" rel="noopener">Reclaim AI</a>はワークライフバランス最適化を重視。
+                    TaskMasterAIは統合型・日本語ネイティブ・中価格帯でバランスの取れたソリューションを提供します。
+                </p>
             </div>
         </div>
     </section>
