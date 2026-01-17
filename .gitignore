@@ -75,11 +75,28 @@ nul
 # ===================================
 # 機密・内部情報（公開禁止）
 # ===================================
-.claude/settings.local.json
-.claude/DEVELOPMENT_LOG.md
-.claude/REVENUE_METRICS.md
-.claude/SESSION_REPORT.md
-DEVELOPMENT_LOG.md
+# Claude開発環境（機密）
+.claude/
+CLAUDE.md
+CLAUDE-*.md
+STATUS.md
+TASKS.md
+
+# 認証情報・シークレット
+token.json
+*_token.json
+config/credentials/
+
+# セッションログ
+claude_raw_*.txt
+claude_stderr_*.txt
+claude_stdout_*.txt
+prompt_*.txt
+
+# ログ・実行履歴
 logs/
+DEVELOPMENT_LOG.md
+
+# 法務・個人情報
 docs/legal.html
 site/legal.html
